@@ -37,6 +37,8 @@ bin
 data
 proxy
 certs
+report.xml
 core.json
 fronted.json
 logs
+dist

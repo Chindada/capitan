@@ -6,8 +6,8 @@ require (
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/appleboy/gin-jwt/v2 v2.10.3
-	github.com/chindada/leopard v0.0.0-20250616073055-cf92cfc2b303
-	github.com/chindada/panther v0.0.0-20250621052424-a3f95ae6f3ab
+	github.com/chindada/leopard v1.0.0
+	github.com/chindada/panther v0.0.0-20250621075932-b36934ae899b
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0

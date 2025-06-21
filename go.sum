@@ -31,10 +31,10 @@ github.com/bytedance/sonic/loader v0.2.3 h1:yctD0Q3v2NOGfSWPLPvG2ggA2kV6TS6s4wio
 github.com/bytedance/sonic/loader v0.2.3/go.mod h1:N8A3vUdtUebEY2/VQC0MyhYeKUFosQU6FxH2JmUe6VI=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/chindada/leopard v0.0.0-20250616073055-cf92cfc2b303 h1:GOOqjCVuPNAauYB+5GjZRkB/W2U7AsiGaPNZ+poWyxU=
-github.com/chindada/leopard v0.0.0-20250616073055-cf92cfc2b303/go.mod h1:cYGHGbB/W44JD0q//yOhZwSV5u8AZKRl73w3n0UnsjI=
-github.com/chindada/panther v0.0.0-20250621052424-a3f95ae6f3ab h1:p3qkKHrX/UgppHmnxn5exAukf2GlGugZApVTMiDJv8c=
-github.com/chindada/panther v0.0.0-20250621052424-a3f95ae6f3ab/go.mod h1:dq3isLvBx5fekS6hI8W59NLeeVaC0MGzaL65fHN5Tqk=
+github.com/chindada/leopard v1.0.0 h1:eL96WEBujQBfS4QvITlF64vpXyj6Poy7iIh4RJart8Q=
+github.com/chindada/leopard v1.0.0/go.mod h1:YOz8urXQ+VyRKXADZQlfUmoiWGuGUFmqm9FBq1HlFRk=
+github.com/chindada/panther v0.0.0-20250621075932-b36934ae899b h1:COlYjtDYihtxq8i3LY1iGMMDeNnMqtma891S7hmGtqE=
+github.com/chindada/panther v0.0.0-20250621075932-b36934ae899b/go.mod h1:dq3isLvBx5fekS6hI8W59NLeeVaC0MGzaL65fHN5Tqk=
 github.com/cloudwego/base64x v0.1.5 h1:XPciSp1xaq2VCSt6lF0phncD4koWyULpl5bUxbfCyP4=
 github.com/cloudwego/base64x v0.1.5/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
