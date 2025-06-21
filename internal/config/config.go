@@ -68,7 +68,6 @@ func (c *Config) loadEnv() {
 	c.vp.SetDefault("DB_POOL_MAX", 90)
 	c.vp.SetDefault("SRV_PORT", "23456")
 	c.vp.SetDefault("HTTP_PORT", "80")
-	c.vp.SetDefault("HTTPS_PORT", "443")
 	c.vp.SetDefault("GRPC_PORT", "56666")
 	c.vp.SetDefault("GRPC_HOST", "127.0.0.1")
 	c.vp.AutomaticEnv()
@@ -89,16 +88,12 @@ func (c *Config) loadEnv() {
 			Host: c.vp.GetString("GRPC_HOST"),
 		},
 		Proxy: Proxy{
-			PidPath:     filepath.Join(c.rootPath, "proxy", "proxy.pid"),
-			MimePath:    filepath.Join(c.rootPath, "proxy", "conf", "mime.types"),
-			CertPath:    filepath.Join(c.rootPath, "certs", "cert.pem"),
-			KeyPath:     filepath.Join(c.rootPath, "certs", "key.pem"),
-			DhparamPath: filepath.Join(c.rootPath, "certs", "capitan.dhparam"),
-			SRVPort:     c.vp.GetString("SRV_PORT"),
-			HTTPPort:    c.vp.GetString("HTTP_PORT"),
-			HTTPSPort:   c.vp.GetString("HTTPS_PORT"),
-			AssetsPath:  filepath.Join(c.rootPath, "dist", "assets"),
-			DistPath:    filepath.Join(c.rootPath, "dist"),
+			PidPath:    filepath.Join(c.rootPath, "proxy", "proxy.pid"),
+			MimePath:   filepath.Join(c.rootPath, "proxy", "conf", "mime.types"),
+			SRVPort:    c.vp.GetString("SRV_PORT"),
+			HTTPPort:   c.vp.GetString("HTTP_PORT"),
+			AssetsPath: filepath.Join(c.rootPath, "dist", "assets"),
+			DistPath:   filepath.Join(c.rootPath, "dist"),
 		},
 	}
 }

@@ -36,7 +36,6 @@ db_backup
 bin
 data
 proxy
-certs
 report.xml
 core.json
 fronted.json

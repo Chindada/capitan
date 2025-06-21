@@ -92,9 +92,6 @@ jobs:
               -v $(pwd)/dist:/app \
               ghcr.io/chindada/sequoia:${{ needs.test.outputs.SRV_WEB_VERSION }} \
               cp /usr/share/sequoia/version.json /app
-      - name: Generate certs
-        run: |
-          ./scripts/certs.sh
       - name: Prepare
         run: |
           git config --global url."https://${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"

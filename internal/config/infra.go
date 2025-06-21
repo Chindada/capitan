@@ -29,13 +29,8 @@ type Proxy struct {
 	PidPath  string
 	MimePath string
 
-	CertPath    string
-	KeyPath     string
-	DhparamPath string
-
-	SRVPort   string
-	HTTPPort  string
-	HTTPSPort string
+	SRVPort  string
+	HTTPPort string
 
 	AssetsPath string
 	DistPath   string
