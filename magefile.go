@@ -143,7 +143,7 @@ func (Dep) InstallGolangciLint() error {
 	err := sh.Run("which", "golangci-lint")
 	if err != nil || freshInstall {
 		fmt.Println("Installing Golangci-lint...")
-		return sh.RunV("go", "install", "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
+		return sh.RunV("go", "install", "github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
 	}
 	return nil
 }
