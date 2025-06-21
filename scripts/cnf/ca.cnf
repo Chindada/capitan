@@ -1,0 +1,12 @@
+[ req ]
+prompt=no
+distinguished_name=req_name
+
+[ req_name ]
+C=TW
+ST=Taiwan
+L=Taipei
+O=AutumnXP
+OU=BU
+CN=AutumnXP
+emailAddress=info@autumnxp.com

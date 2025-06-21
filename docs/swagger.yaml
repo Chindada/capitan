@@ -1,0 +1,569 @@
+definitions:
+  emptypb.Empty:
+    type: object
+  pb.APIResponse:
+    properties:
+      code:
+        type: integer
+      response:
+        type: string
+    type: object
+  pb.Backup:
+    properties:
+      created_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      name:
+        type: string
+      path:
+        type: string
+    type: object
+  pb.BackupList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.Backup'
+        type: array
+    type: object
+  pb.BasicUser:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        $ref: '#/definitions/pb.UserRole'
+      username:
+        type: string
+    type: object
+  pb.ChangePasswordRequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+      username:
+        type: string
+    type: object
+  pb.LoginRequest:
+    properties:
+      mfa_code:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  pb.LoginResponse:
+    properties:
+      code:
+        type: integer
+      expire:
+        type: string
+      token:
+        type: string
+    type: object
+  pb.StockDetail:
+    properties:
+      category:
+        type: string
+      code:
+        type: string
+      currency:
+        type: string
+      day_trade:
+        type: string
+      delivery_date:
+        type: string
+      delivery_month:
+        type: string
+      exchange:
+        type: string
+      limit_down:
+        type: number
+      limit_up:
+        type: number
+      margin_trading_balance:
+        type: integer
+      multiplier:
+        type: integer
+      name:
+        type: string
+      option_right:
+        type: string
+      reference:
+        type: number
+      security_type:
+        type: string
+      short_selling_balance:
+        type: integer
+      strike_price:
+        type: integer
+      symbol:
+        type: string
+      target_code:
+        type: string
+      underlying_code:
+        type: string
+      underlying_kind:
+        type: string
+      unit:
+        type: integer
+      update_date:
+        type: string
+    type: object
+  pb.StockDetailList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.StockDetail'
+        type: array
+    type: object
+  pb.User:
+    properties:
+      basic:
+        $ref: '#/definitions/pb.BasicUser'
+      created_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      enable_totp:
+        type: boolean
+      id:
+        type: integer
+      totp_id:
+        type: integer
+      updated_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+    type: object
+  pb.UserList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.User'
+        type: array
+    type: object
+  pb.UserRole:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - UserRole_UNKNOWN
+    - UserRole_USER
+    - UserRole_ADMIN
+    - UserRole_ROOT
+  timestamppb.Timestamp:
+    properties:
+      nanos:
+        description: |-
+          Non-negative fractions of a second at nanosecond resolution. Negative
+          second values with fractions must still have non-negative nanos values
+          that count forward in time. Must be from 0 to 999,999,999
+          inclusive.
+        type: integer
+      seconds:
+        description: |-
+          Represents seconds of UTC time since Unix epoch
+          1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+          9999-12-31T23:59:59Z inclusive.
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Capitan V1 Srv's API docs
+  title: Capitan V1 OpenAPI
+  version: v0.0
+paths:
+  /api/capitan/v1/basic/stocks:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.StockDetailList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get stocks
+      tags:
+      - Basic V1
+  /api/capitan/v1/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      summary: Login
+      tags:
+      - User V1
+  /api/capitan/v1/logout:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+      summary: Logout
+      tags:
+      - User V1
+  /api/capitan/v1/refresh:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Refresh token
+      tags:
+      - User V1
+  /api/capitan/v1/stream/futures:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - JWT: []
+      summary: Get stocks
+      tags:
+      - Basic V1
+  /api/capitan/v1/system/backup:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: backup-name
+        in: header
+        name: backup-name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Delete backup
+      tags:
+      - System V1
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.BackupList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: List backup
+      tags:
+      - System V1
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.Backup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Restore backup
+      tags:
+      - System V1
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Create backup
+      tags:
+      - System V1
+  /api/capitan/v1/system/backup/download:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: backup-name
+        in: header
+        name: backup-name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Download backup
+      tags:
+      - System V1
+  /api/capitan/v1/system/backup/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Upload backup
+      tags:
+      - System V1
+  /api/capitan/v1/user:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Delete user by username
+      tags:
+      - User V1
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: New user
+      tags:
+      - User V1
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Update user except password
+      tags:
+      - User V1
+  /api/capitan/v1/user/list:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.UserList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get all user
+      tags:
+      - User V1
+  /api/capitan/v1/user/password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Update user password
+      tags:
+      - User V1
+securityDefinitions:
+  JWT:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
