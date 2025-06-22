@@ -22,6 +22,5 @@ docker logs -f capitan
 ```sh
 docker stop titan
 docker stop capitan
-docker rmi -f $(docker images -a -q)
 docker system prune --volumes -f
 ```

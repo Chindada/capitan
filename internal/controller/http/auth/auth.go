@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -77,11 +78,24 @@ func NewAuthMiddleware(system usecases.System, expired time.Duration) (*jwt.GinJ
 	return jwt.New(&m)
 }
 
-func hTTPStatusMessageFunc(e error, _ *gin.Context) string {
+const (
+	usecaseErrorKey = "USECASE_ERROR"
+)
+
+func hTTPStatusMessageFunc(e error, c *gin.Context) string {
+	if ucErr, ok := e.(*usecases.UseCaseError); ok {
+		c.Set(usecaseErrorKey, ucErr)
+	}
 	return e.Error()
 }
 
 func unauthorized(c *gin.Context, code int, message string) {
+	usecaseErr, ok := c.Get(usecaseErrorKey)
+	if ok {
+		ucErr, _ := usecaseErr.(*usecases.UseCaseError)
+		resp.Fail(c, 452, ucErr)
+		return
+	}
 	resp.Success(c, code, &pb.APIResponse{
 		Code:     int64(code),
 		Response: message,
@@ -131,6 +145,7 @@ func authenticator(system usecases.System) func(c *gin.Context) (any, error) {
 func payloadFunc(data any) jwt.MapClaims {
 	if v, ok := data.(*pb.User); ok {
 		return jwt.MapClaims{
+			"role":     strings.ToLower(v.GetBasic().GetRole().String()),
 			"username": v.GetBasic().GetUsername(),
 			"user_id":  v.GetId(),
 		}

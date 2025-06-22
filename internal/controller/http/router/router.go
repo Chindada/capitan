@@ -2,6 +2,7 @@
 package router
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -13,6 +14,7 @@ import (
 	v1 "github.com/chindada/capitan/internal/controller/http/v1"
 	"github.com/chindada/capitan/internal/controller/http/ws"
 	"github.com/chindada/capitan/internal/usecases"
+	"github.com/chindada/capitan/internal/usecases/rbac"
 	"github.com/chindada/capitan/internal/version"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -47,7 +49,7 @@ func NewRouter(system usecases.System) *Router {
 	g.Use(gin.Recovery())
 	g.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	jwtHandler, err := auth.NewAuthMiddleware(system, time.Hour*8)
+	jwtHandler, err := auth.NewAuthMiddleware(system, time.Hour*24)
 	if err != nil {
 		panic(err)
 	}
@@ -86,6 +88,7 @@ func NewRouter(system usecases.System) *Router {
 	v1Private := g.Group(v1Prefix)
 	v1WSGroup.Use(jwtHandler.MiddlewareFunc())
 	v1Private.Use(jwtHandler.MiddlewareFunc())
+	v1Private.Use(checkRole)
 
 	v1.NewUserRoutes(v1Public, v1Private, jwtHandler, system)
 
@@ -114,4 +117,28 @@ func (r *Router) AddV1SystemRoutes() *Router {
 
 func (r *Router) GetHandler() *gin.Engine {
 	return r.rootHandler
+}
+
+var errUnauthorized = errors.New("unauthorized")
+
+func checkRole(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	if v, ok := claims["role"]; ok {
+		role, roleOK := v.(string)
+		if !roleOK {
+			resp.Fail(c, http.StatusForbidden, errUnauthorized)
+			return
+		}
+		if auth := rbac.Check(rbac.Action{
+			Method: c.Request.Method,
+			Path:   c.Request.URL.Path,
+			Role:   role,
+		}); auth {
+			c.Next()
+		} else {
+			resp.Fail(c, http.StatusForbidden, errUnauthorized)
+		}
+	} else {
+		resp.Fail(c, http.StatusForbidden, errUnauthorized)
+	}
 }
