@@ -148,26 +148,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/capitan/v1/stream/futures": {
-            "get": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Basic V1"
-                ],
-                "summary": "Get stocks",
-                "responses": {}
-            }
-        },
         "/api/capitan/v1/system/backup": {
             "get": {
                 "security": [

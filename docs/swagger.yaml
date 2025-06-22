@@ -257,18 +257,6 @@ paths:
       summary: Refresh token
       tags:
       - User V1
-  /api/capitan/v1/stream/futures:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - JWT: []
-      summary: Get stocks
-      tags:
-      - Basic V1
   /api/capitan/v1/system/backup:
     delete:
       consumes:
