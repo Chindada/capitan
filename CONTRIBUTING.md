@@ -73,7 +73,7 @@ brew install git-chglog
 ```
 
 ```sh
-VERSION=0.0.0
+VERSION=1.0.0
 git tag -a v$VERSION -m $VERSION
 git push -u origin --tags
 git push -u origin --all
