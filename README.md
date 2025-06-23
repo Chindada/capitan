@@ -19,6 +19,8 @@ docker run -d \
 docker logs -f capitan
 ```
 
+### Complete Setup
+
 ```sh
 docker stop titan
 docker stop capitan
@@ -26,9 +28,6 @@ docker system prune --volumes -f
 ```
 
 ```sh
-docker stop titan
-docker stop capitan
-docker system prune --volumes -f
 docker pull ghcr.io/chindada/titan:v1.0
 docker run -d \
     --restart always \
@@ -46,4 +45,5 @@ docker run -d \
     -v $(pwd)/db_backup:/usr/share/app/db_backup \
     -v $(pwd)/logs:/usr/share/app/logs \
     ghcr.io/chindada/capitan:v1.0
+docker logs -f capitan
 ```

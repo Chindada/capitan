@@ -2,8 +2,6 @@ package usecases
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/chindada/capitan/internal/config"
 	"github.com/chindada/leopard/pkg/eventbus"
@@ -66,13 +64,11 @@ func (uc *streamUseCase) subscribeFutureTick(code string) error {
 		return err
 	}
 	for {
-		tick, rErr := tickStream.Recv()
+		_, rErr := tickStream.Recv()
 		if rErr != nil {
 			return rErr
 		}
-		tickTime, _ := time.ParseInLocation(time.DateTime, tick.GetDateTime(), time.Local)
-		fmt.Printf("Received tick: %s, price: %f, volume: %d, time: %v,time gap: %d\n",
-			tick.GetCode(), tick.GetClose(), tick.GetVolume(), tickTime, time.Since(tickTime).Milliseconds())
+		// tickTime, _ := time.ParseInLocation(time.DateTime, tick.GetDateTime(), time.Local)
 	}
 }
 
@@ -88,6 +84,5 @@ func (uc *streamUseCase) subscribeFutureTick(code string) error {
 // 		if err != nil {
 // 			return err
 // 		}
-// 		fmt.Printf("%v\n", bidAsk)
 // 	}
 // }

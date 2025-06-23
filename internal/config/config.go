@@ -31,14 +31,14 @@ const (
 type Config struct {
 	InfraConfig
 
-	vp     *viper.Viper
-	logger *log.Log
-
+	vp      *viper.Viper
+	logger  *log.Log
 	gRPConn *grpc.ClientConn
-	dbPool  client.PGClient
 
-	rootPath   string
-	needStopDB bool
+	dbClient client.PGClient
+
+	rootPath  string
+	dbStarted bool
 }
 
 var (
@@ -123,7 +123,6 @@ func Init() {
 	})
 }
 
-// Get -.
 func Get() *Config {
 	if singleton == nil {
 		once.Do(Init)
@@ -154,7 +153,7 @@ func (c *Config) launchDB() {
 		if err = dbt.StartDB(); err != nil {
 			c.logger.Fatal(err)
 		}
-		c.needStopDB = true
+		c.dbStarted = true
 	}
 	if err := dbt.MigrateScheme(nil); err != nil {
 		c.logger.Fatal(err)
@@ -183,7 +182,7 @@ func (c *Config) setPostgresPool() {
 	if err != nil {
 		c.logger.Fatal(err)
 	}
-	c.dbPool = pg
+	c.dbClient = pg
 }
 
 func (c *Config) runExporter(dbt launcher.PGLauncher) {
@@ -255,17 +254,17 @@ func (c *Config) GetGRPCConn() *grpc.ClientConn {
 }
 
 func (c *Config) GetPostgresPool() client.PGClient {
-	if c.dbPool == nil {
+	if c.dbClient == nil {
 		c.logger.Fatal("postgres not connected")
 	}
-	return c.dbPool
+	return c.dbClient
 }
 
 func (c *Config) CloseDB() {
-	if c.dbPool != nil {
-		c.dbPool.Close()
+	if c.dbClient != nil {
+		c.dbClient.Close()
 	}
-	if !c.needStopDB {
+	if !c.dbStarted {
 		return
 	}
 	dbt := launcher.Get()
