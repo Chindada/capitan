@@ -120,6 +120,11 @@ func (r *Router) AddV1TradeRoutes(trade usecases.Trade) *Router {
 	return r
 }
 
+func (r *Router) AddV1EventsRoutes(e usecases.Events) *Router {
+	v1.NewEventsRoutes(r.v1Group, e)
+	return r
+}
+
 func (r *Router) GetHandler() *gin.Engine {
 	return r.rootHandler
 }

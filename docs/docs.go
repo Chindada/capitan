@@ -54,6 +54,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/capitan/v1/event/login": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event V1"
+                ],
+                "summary": "Get login events",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.LoginEventList"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/login": {
             "post": {
                 "consumes": [
@@ -724,6 +751,37 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.LoginEvent": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "resp_code": {
+                    "$ref": "#/definitions/pb.LoginRespCode"
+                },
+                "user": {
+                    "$ref": "#/definitions/pb.User"
+                }
+            }
+        },
+        "pb.LoginEventList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.LoginEvent"
+                    }
+                }
+            }
+        },
         "pb.LoginRequest": {
             "type": "object",
             "properties": {
@@ -737,6 +795,23 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "pb.LoginRespCode": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "x-enum-varnames": [
+                "LoginRespCode_OK",
+                "LoginRespCode_PASSWORD_INCORRECT",
+                "LoginRespCode_USER_NOT_FOUND",
+                "LoginRespCode_DB_ERROR",
+                "LoginRespCode_MFA_FAILED"
+            ]
         },
         "pb.LoginResponse": {
             "type": "object",

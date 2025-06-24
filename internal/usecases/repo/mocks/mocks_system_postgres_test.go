@@ -41,20 +41,6 @@ func (m *MockSystemRepo) EXPECT() *MockSystemRepoMockRecorder {
 	return m.recorder
 }
 
-// InsertLoginEvent mocks base method.
-func (m *MockSystemRepo) InsertLoginEvent(ctx context.Context, events []*pb.LoginEvent) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InsertLoginEvent", ctx, events)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// InsertLoginEvent indicates an expected call of InsertLoginEvent.
-func (mr *MockSystemRepoMockRecorder) InsertLoginEvent(ctx, events any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertLoginEvent", reflect.TypeOf((*MockSystemRepo)(nil).InsertLoginEvent), ctx, events)
-}
-
 // InsertSetting mocks base method.
 func (m *MockSystemRepo) InsertSetting(ctx context.Context, s *pb.SystemSetting) error {
 	m.ctrl.T.Helper()
@@ -67,21 +53,6 @@ func (m *MockSystemRepo) InsertSetting(ctx context.Context, s *pb.SystemSetting)
 func (mr *MockSystemRepoMockRecorder) InsertSetting(ctx, s any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertSetting", reflect.TypeOf((*MockSystemRepo)(nil).InsertSetting), ctx, s)
-}
-
-// SelectLoginEvent mocks base method.
-func (m *MockSystemRepo) SelectLoginEvent(ctx context.Context, limit int64) ([]*pb.LoginEvent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SelectLoginEvent", ctx, limit)
-	ret0, _ := ret[0].([]*pb.LoginEvent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SelectLoginEvent indicates an expected call of SelectLoginEvent.
-func (mr *MockSystemRepoMockRecorder) SelectLoginEvent(ctx, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectLoginEvent", reflect.TypeOf((*MockSystemRepo)(nil).SelectLoginEvent), ctx, limit)
 }
 
 // SelectSetting mocks base method.

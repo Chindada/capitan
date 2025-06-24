@@ -10,6 +10,8 @@
 package mocks
 
 import (
+	reflect "reflect"
+
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -35,4 +37,16 @@ func NewMockTrade(ctrl *gomock.Controller) *MockTrade {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrade) EXPECT() *MockTradeMockRecorder {
 	return m.recorder
+}
+
+// TradeMock mocks base method.
+func (m *MockTrade) TradeMock() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "TradeMock")
+}
+
+// TradeMock indicates an expected call of TradeMock.
+func (mr *MockTradeMockRecorder) TradeMock() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TradeMock", reflect.TypeOf((*MockTrade)(nil).TradeMock))
 }

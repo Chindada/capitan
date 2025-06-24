@@ -44,6 +44,26 @@ definitions:
       username:
         type: string
     type: object
+  pb.LoginEvent:
+    properties:
+      created_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      id:
+        type: integer
+      ip:
+        type: string
+      resp_code:
+        $ref: '#/definitions/pb.LoginRespCode'
+      user:
+        $ref: '#/definitions/pb.User'
+    type: object
+  pb.LoginEventList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.LoginEvent'
+        type: array
+    type: object
   pb.LoginRequest:
     properties:
       mfa_code:
@@ -53,6 +73,20 @@ definitions:
       username:
         type: string
     type: object
+  pb.LoginRespCode:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-varnames:
+    - LoginRespCode_OK
+    - LoginRespCode_PASSWORD_INCORRECT
+    - LoginRespCode_USER_NOT_FOUND
+    - LoginRespCode_DB_ERROR
+    - LoginRespCode_MFA_FAILED
   pb.LoginResponse:
     properties:
       code:
@@ -216,6 +250,22 @@ paths:
       summary: Get stocks
       tags:
       - Basic V1
+  /api/capitan/v1/event/login:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.LoginEventList'
+      security:
+      - JWT: []
+      summary: Get login events
+      tags:
+      - Event V1
   /api/capitan/v1/login:
     post:
       consumes:

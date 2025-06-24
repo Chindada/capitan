@@ -178,7 +178,7 @@ func (uc *systemUseCase) Login(ctx *gin.Context, loginReq *pb.LoginRequest) (*pb
 			RespCode:  code,
 			CreatedAt: timestamppb.Now(),
 		}
-		_ = uc.systemRepo.InsertLoginEvent(ctx, []*pb.LoginEvent{event})
+		uc.bus.PublishTopicEvent(topicLogin, event)
 	}()
 	if user.GetBasic().GetUsername() == "" {
 		code = pb.LoginRespCode_USER_NOT_FOUND

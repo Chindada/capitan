@@ -10,6 +10,8 @@
 package mocks
 
 import (
+	reflect "reflect"
+
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -35,4 +37,16 @@ func NewMockStream(ctrl *gomock.Controller) *MockStream {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockStream) EXPECT() *MockStreamMockRecorder {
 	return m.recorder
+}
+
+// StreamMock mocks base method.
+func (m *MockStream) StreamMock() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "StreamMock")
+}
+
+// StreamMock indicates an expected call of StreamMock.
+func (mr *MockStreamMockRecorder) StreamMock() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamMock", reflect.TypeOf((*MockStream)(nil).StreamMock))
 }
