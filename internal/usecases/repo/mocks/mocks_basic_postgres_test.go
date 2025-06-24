@@ -82,3 +82,18 @@ func (mr *MockBasicRepoMockRecorder) InsertStockDetail(ctx, t any) *gomock.Call 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertStockDetail", reflect.TypeOf((*MockBasicRepo)(nil).InsertStockDetail), ctx, t)
 }
+
+// SearchFutureDetail mocks base method.
+func (m *MockBasicRepo) SearchFutureDetail(ctx context.Context, code string) ([]*pb.FutureDetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchFutureDetail", ctx, code)
+	ret0, _ := ret[0].([]*pb.FutureDetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchFutureDetail indicates an expected call of SearchFutureDetail.
+func (mr *MockBasicRepoMockRecorder) SearchFutureDetail(ctx, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchFutureDetail", reflect.TypeOf((*MockBasicRepo)(nil).SearchFutureDetail), ctx, code)
+}

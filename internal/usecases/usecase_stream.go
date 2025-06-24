@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/chindada/capitan/internal/config"
 	"github.com/chindada/leopard/pkg/eventbus"
@@ -13,7 +14,9 @@ import (
 
 //go:generate mockgen -source=usecase_stream.go -destination=./mocks/mocks_usecase_stream_test.go -package=mocks
 
-type Stream interface{}
+type Stream interface {
+	StreamMock()
+}
 
 type streamUseCase struct {
 	logger *log.Log
@@ -29,15 +32,16 @@ func NewStream() Stream {
 		bus:          eventbus.Get(),
 		streamClient: pb.NewStreamInterfaceClient(cfg.GetGRPCConn()),
 	}
+
 	go uc.subscribeShioajiEvent()
-	codes := []string{"TXFG5", "MXFG5", "TMFG5"}
-	for _, code := range codes {
-		go func(c string) {
-			_ = uc.subscribeFutureTick(c)
-		}(code)
-	}
+
+	uc.bus.SubscribeAsync(topicStreamSubscribeFutureTick, false, uc.subscribeFutureTick)
+	uc.bus.SubscribeAsync(topicStreamSubscribeFutureBidAsk, false, uc.subscribeFutureBidAsk)
+
 	return uc
 }
+
+func (uc *streamUseCase) StreamMock() {}
 
 func (uc *streamUseCase) subscribeShioajiEvent() {
 	eventStream, err := uc.streamClient.SubscribeShioajiEvent(context.Background(), &emptypb.Empty{})
@@ -56,33 +60,36 @@ func (uc *streamUseCase) subscribeShioajiEvent() {
 	}
 }
 
-func (uc *streamUseCase) subscribeFutureTick(code string) error {
+func (uc *streamUseCase) subscribeFutureTick(code string) {
 	tickStream, err := uc.streamClient.SubscribeFutureTick(context.Background(), &pb.SubscribeFutureRequest{
 		Code: code,
 	})
 	if err != nil {
-		return err
+		uc.logger.Errorf("Failed to subscribe to future tick for code %s: %v", code, err)
+		return
 	}
 	for {
-		_, rErr := tickStream.Recv()
+		t, rErr := tickStream.Recv()
 		if rErr != nil {
-			return rErr
+			return
 		}
-		// tickTime, _ := time.ParseInLocation(time.DateTime, tick.GetDateTime(), time.Local)
+		uc.bus.PublishTopicEvent(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureTick, code), t)
 	}
 }
 
-// func (uc *streamUseCase) subscribeFutureBidAsk(code string) error {
-// 	bidAskStream, err := uc.streamClient.SubscribeFutureBidAsk(context.Background(), &pb.SubscribeFutureRequest{
-// 		Code: code,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for {
-// 		bidAsk, err := bidAskStream.Recv()
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// }
+func (uc *streamUseCase) subscribeFutureBidAsk(code string) {
+	bidAskStream, err := uc.streamClient.SubscribeFutureBidAsk(context.Background(), &pb.SubscribeFutureRequest{
+		Code: code,
+	})
+	if err != nil {
+		uc.logger.Errorf("Failed to subscribe to future bid-ask for code %s: %v", code, err)
+		return
+	}
+	for {
+		bidAsk, rErr := bidAskStream.Recv()
+		if rErr != nil {
+			return
+		}
+		uc.bus.PublishTopicEvent(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureBidAsk, code), bidAsk)
+	}
+}

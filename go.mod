@@ -18,6 +18,7 @@ require (
 	github.com/open-policy-agent/opa v1.5.1
 	github.com/pquerna/otp v1.5.0
 	github.com/prometheus/client_golang v1.22.0
+	github.com/ricochet2200/go-disk-usage/du v0.0.0-20210707232629-ac9918953285
 	github.com/sethvargo/go-password v0.3.1
 	github.com/spf13/viper v1.20.1
 	github.com/swaggo/files v1.0.1

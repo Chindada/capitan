@@ -206,7 +206,7 @@ func (c *Config) connectGRPC() {
 	if c.InfraConfig.GRPC.Port == "" {
 		c.logger.Fatal("GRPC port is not set")
 	}
-	retry := 10
+	retry := 60
 	c.logger.Infof("Connecting to %s...", net.JoinHostPort(c.InfraConfig.GRPC.Host, c.InfraConfig.GRPC.Port))
 	for i := range retry {
 		if c.tryConnectGRPC() {

@@ -12,10 +12,12 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	pb "github.com/chindada/panther/golang/pb"
 	gin "github.com/gin-gonic/gin"
 	otp "github.com/pquerna/otp"
+	du "github.com/ricochet2200/go-disk-usage/du"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -129,6 +131,20 @@ func (mr *MockSystemMockRecorder) GetAllUser(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUser", reflect.TypeOf((*MockSystem)(nil).GetAllUser), ctx)
 }
 
+// GetDiskUsage mocks base method.
+func (m *MockSystem) GetDiskUsage() *du.DiskUsage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDiskUsage")
+	ret0, _ := ret[0].(*du.DiskUsage)
+	return ret0
+}
+
+// GetDiskUsage indicates an expected call of GetDiskUsage.
+func (mr *MockSystemMockRecorder) GetDiskUsage() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiskUsage", reflect.TypeOf((*MockSystem)(nil).GetDiskUsage))
+}
+
 // GetLastJWT mocks base method.
 func (m *MockSystem) GetLastJWT(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
@@ -142,6 +158,20 @@ func (m *MockSystem) GetLastJWT(ctx context.Context) (string, error) {
 func (mr *MockSystemMockRecorder) GetLastJWT(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastJWT", reflect.TypeOf((*MockSystem)(nil).GetLastJWT), ctx)
+}
+
+// GetLaunchTime mocks base method.
+func (m *MockSystem) GetLaunchTime() time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLaunchTime")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// GetLaunchTime indicates an expected call of GetLaunchTime.
+func (mr *MockSystemMockRecorder) GetLaunchTime() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLaunchTime", reflect.TypeOf((*MockSystem)(nil).GetLaunchTime))
 }
 
 // GetUser mocks base method.

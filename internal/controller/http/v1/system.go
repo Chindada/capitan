@@ -9,6 +9,8 @@ import (
 	"syscall"
 
 	"github.com/chindada/capitan/internal/controller/http/resp"
+	"github.com/chindada/capitan/internal/usecases"
+	"github.com/chindada/capitan/internal/version"
 	"github.com/chindada/panther/golang/pb"
 	"github.com/chindada/panther/pkg/launcher"
 	"github.com/gin-gonic/gin"
@@ -16,14 +18,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type systemRoutes struct{}
+type systemRoutes struct {
+	sys usecases.System
+}
 
-func NewSystemRoutes(handler *gin.RouterGroup) {
-	r := &systemRoutes{}
+func NewSystemRoutes(handler *gin.RouterGroup, sys usecases.System) {
+	r := &systemRoutes{
+		sys: sys,
+	}
 	base := "/system"
 
 	h := handler.Group(base)
 	{
+		h.GET("/info", r.getSystemInfo)
+
 		h.GET("/backup", r.listBackup)
 		h.PUT("/backup", r.createBackup)
 		h.POST("/backup", r.restoreBackup)
@@ -226,4 +234,29 @@ func (r *systemRoutes) deleteBackup(c *gin.Context) {
 		return
 	}
 	resp.Success(c, http.StatusOK, &emptypb.Empty{})
+}
+
+// getSystemInfo -.
+//
+//	@Tags		System V1
+//	@Summary	Get system info
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.SystemInfo
+//	@Failure	400	{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/system/info [get]
+func (r *systemRoutes) getSystemInfo(c *gin.Context) {
+	res := r.sys.GetDiskUsage()
+	if res.Size() == 0 {
+		resp.Fail(c, http.StatusBadRequest, resp.ErrGetDiskUsageFailed)
+		return
+	}
+
+	resp.Success(c, http.StatusOK, &pb.SystemInfo{
+		LaunchTime: timestamppb.New(r.sys.GetLaunchTime().Local()),
+		DiskUsage:  float64(res.Usage() * 100),
+		Core:       version.GetCore(),
+		Web:        version.GetWeb(),
+	})
 }

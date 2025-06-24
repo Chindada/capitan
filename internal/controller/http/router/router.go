@@ -110,8 +110,13 @@ func (r *Router) AddV1StreamRoutes(stream usecases.Stream) *Router {
 	return r
 }
 
-func (r *Router) AddV1SystemRoutes() *Router {
-	v1.NewSystemRoutes(r.v1Group)
+func (r *Router) AddV1SystemRoutes(system usecases.System) *Router {
+	v1.NewSystemRoutes(r.v1Group, system)
+	return r
+}
+
+func (r *Router) AddV1TradeRoutes(trade usecases.Trade) *Router {
+	v1.NewTradeRoutes(r.v1WSGroup, trade)
 	return r
 }
 

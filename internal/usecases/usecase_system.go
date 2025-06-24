@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/mail"
+	"time"
 
 	"github.com/chindada/capitan/internal/config"
 	"github.com/chindada/capitan/internal/usecases/modules/encrypt"
@@ -11,9 +12,11 @@ import (
 	"github.com/chindada/leopard/pkg/eventbus"
 	"github.com/chindada/leopard/pkg/log"
 	"github.com/chindada/panther/golang/pb"
+	"github.com/chindada/panther/pkg/launcher"
 	"github.com/gin-gonic/gin"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
+	"github.com/ricochet2200/go-disk-usage/du"
 	"github.com/sethvargo/go-password/password"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -32,6 +35,9 @@ const (
 )
 
 type System interface {
+	GetDiskUsage() *du.DiskUsage
+	GetLaunchTime() time.Time
+
 	Login(ctx *gin.Context, loginReq *pb.LoginRequest) (*pb.User, error)
 
 	CreateTotp(username string) (*otp.Key, error)
@@ -55,6 +61,8 @@ type systemUseCase struct {
 
 	logger *log.Log
 	bus    *eventbus.Bus
+
+	launchTime time.Time
 }
 
 func NewSystem() System {
@@ -62,6 +70,7 @@ func NewSystem() System {
 	cfg := config.Get()
 	pg := cfg.GetPostgresPool()
 	uc := &systemUseCase{
+		launchTime: time.Now(),
 		systemRepo: repo.NewSystemRepo(pg),
 		userRepo:   repo.NewUserRepo(pg),
 		logger:     logger,
@@ -262,4 +271,12 @@ func (uc *systemUseCase) AddTotpByUser(ctx context.Context, username string, tot
 
 func (uc *systemUseCase) ValidateTotp(key, code string) bool {
 	return totp.Validate(code, key)
+}
+
+func (uc *systemUseCase) GetDiskUsage() *du.DiskUsage {
+	return du.NewDiskUsage(launcher.Get().GetDataPath())
+}
+
+func (uc *systemUseCase) GetLaunchTime() time.Time {
+	return uc.launchTime
 }

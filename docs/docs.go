@@ -390,6 +390,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/capitan/v1/system/info": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System V1"
+                ],
+                "summary": "Get system info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.SystemInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/user": {
             "put": {
                 "security": [
@@ -801,6 +834,34 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/pb.StockDetail"
                     }
+                }
+            }
+        },
+        "pb.SystemBuild": {
+            "type": "object",
+            "properties": {
+                "commit": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.SystemInfo": {
+            "type": "object",
+            "properties": {
+                "core": {
+                    "$ref": "#/definitions/pb.SystemBuild"
+                },
+                "disk_usage": {
+                    "type": "number"
+                },
+                "launch_time": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                },
+                "web": {
+                    "$ref": "#/definitions/pb.SystemBuild"
                 }
             }
         },

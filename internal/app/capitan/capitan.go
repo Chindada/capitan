@@ -21,15 +21,18 @@ func Start() {
 	cfg := config.Get()
 
 	// Pre process, do not adjust the order, except for new feature
-	ucSystem := usecases.NewSystem()
+	ucTrade := usecases.NewTrade()
 	ucStream := usecases.NewStream()
 	ucBasic := usecases.NewBasic()
+	ucSystem := usecases.NewSystem()
+	// TODO: `event`, `history`
 
 	// HTTP Handler
 	r := router.NewRouter(ucSystem).
+		AddV1SystemRoutes(ucSystem).
 		AddV1BasicRoutes(ucBasic).
-		AddV1StreamRoutes(ucStream).
-		AddV1SystemRoutes()
+		AddV1TradeRoutes(ucTrade).
+		AddV1StreamRoutes(ucStream)
 
 	// Start HTTP Server
 	if e := httpserver.New(

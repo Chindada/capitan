@@ -118,6 +118,24 @@ definitions:
           $ref: '#/definitions/pb.StockDetail'
         type: array
     type: object
+  pb.SystemBuild:
+    properties:
+      commit:
+        type: string
+      version:
+        type: string
+    type: object
+  pb.SystemInfo:
+    properties:
+      core:
+        $ref: '#/definitions/pb.SystemBuild'
+      disk_usage:
+        type: number
+      launch_time:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      web:
+        $ref: '#/definitions/pb.SystemBuild'
+    type: object
   pb.User:
     properties:
       basic:
@@ -405,6 +423,26 @@ paths:
       security:
       - JWT: []
       summary: Upload backup
+      tags:
+      - System V1
+  /api/capitan/v1/system/info:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.SystemInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get system info
       tags:
       - System V1
   /api/capitan/v1/user:
