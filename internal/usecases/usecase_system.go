@@ -145,7 +145,7 @@ func (uc *systemUseCase) CreateUser(ctx context.Context, t *pb.User) error {
 }
 
 func (uc *systemUseCase) GetLastJWT(ctx context.Context) (string, error) {
-	s, err := uc.systemRepo.SelectSetting(ctx, pb.SettingKey_SETTING_JWT)
+	s, err := uc.systemRepo.SelectSetting(ctx, pb.SettingKey_SETTING_KEY_JWT)
 	if err != nil {
 		return "", err
 	}
@@ -154,7 +154,7 @@ func (uc *systemUseCase) GetLastJWT(ctx context.Context) (string, error) {
 
 func (uc *systemUseCase) InsertJWT(ctx context.Context, jwt string) error {
 	return uc.systemRepo.InsertSetting(ctx, &pb.SystemSetting{
-		Key: pb.SettingKey_SETTING_JWT,
+		Key: pb.SettingKey_SETTING_KEY_JWT,
 		Value: &pb.SystemSetting_Jwt{
 			Jwt: &pb.SettingJWT{
 				Secret: jwt,
