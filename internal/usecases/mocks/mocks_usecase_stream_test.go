@@ -12,6 +12,7 @@ package mocks
 import (
 	reflect "reflect"
 
+	usecases "github.com/chindada/capitan/internal/usecases"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -39,14 +40,26 @@ func (m *MockStream) EXPECT() *MockStreamMockRecorder {
 	return m.recorder
 }
 
-// StreamMock mocks base method.
-func (m *MockStream) StreamMock() {
+// CloseFutureClient mocks base method.
+func (m *MockStream) CloseFutureClient(clientID string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "StreamMock")
+	m.ctrl.Call(m, "CloseFutureClient", clientID)
 }
 
-// StreamMock indicates an expected call of StreamMock.
-func (mr *MockStreamMockRecorder) StreamMock() *gomock.Call {
+// CloseFutureClient indicates an expected call of CloseFutureClient.
+func (mr *MockStreamMockRecorder) CloseFutureClient(clientID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamMock", reflect.TypeOf((*MockStream)(nil).StreamMock))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseFutureClient", reflect.TypeOf((*MockStream)(nil).CloseFutureClient), clientID)
+}
+
+// CreateFutureClient mocks base method.
+func (m *MockStream) CreateFutureClient(clientID string, client *usecases.FutureClient) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CreateFutureClient", clientID, client)
+}
+
+// CreateFutureClient indicates an expected call of CreateFutureClient.
+func (mr *MockStreamMockRecorder) CreateFutureClient(clientID, client any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFutureClient", reflect.TypeOf((*MockStream)(nil).CreateFutureClient), clientID, client)
 }
