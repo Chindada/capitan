@@ -15,7 +15,7 @@ import (
 
 //go:generate mockgen -source=usecase_basic.go -destination=./mocks/mocks_usecase_basic_test.go -package=mocks
 
-var mainFutures = []string{"TXF", "MXF", "TMF"}
+var mainFutures = []string{"TXF", "MXF", "TMF", "RZF", "QFF", "CDF"}
 
 type Basic interface {
 	GetAllStockDetail(ctx context.Context) (*pb.StockDetailList, error)
