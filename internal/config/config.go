@@ -9,12 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
+	"syscall"
 	"text/template"
 	"time"
 
 	"github.com/chindada/capitan/internal/config/templates"
 	gRPCClient "github.com/chindada/capitan/internal/usecases/grpc/client"
+	"github.com/chindada/leopard/pkg/command"
 	"github.com/chindada/leopard/pkg/log"
 	"github.com/chindada/panther/golang/pb"
 	"github.com/chindada/panther/pkg/client"
@@ -108,6 +111,34 @@ func (c *Config) writeProxyConfig() {
 	err = os.WriteFile(filepath.Join(c.rootPath, "proxy", "conf", "nginx.conf"), b.Bytes(), 0o600)
 	if err != nil {
 		c.logger.Fatal(err)
+	}
+}
+
+func (c *Config) StartProxy() {
+	cmd := command.NewCMD(filepath.Join(c.rootPath, "proxy", "sbin", "proxy"))
+	cmd.Dir = filepath.Join(c.rootPath, "proxy")
+	err := cmd.Start()
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+}
+
+func (c *Config) StopProxy() {
+	proxyPID, err := os.ReadFile(c.Proxy.PidPath)
+	if err != nil {
+		return
+	}
+	proxyPIDInt, err := strconv.Atoi(strings.ReplaceAll(string(proxyPID), "\n", ""))
+	if err != nil {
+		return
+	}
+	p, e := os.FindProcess(proxyPIDInt)
+	if e != nil {
+		return
+	}
+	e = p.Signal(syscall.SIGQUIT)
+	if e != nil {
+		return
 	}
 }
 

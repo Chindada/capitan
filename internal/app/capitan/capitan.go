@@ -3,9 +3,6 @@ package capitan
 import (
 	"os"
 	"os/signal"
-	"path/filepath"
-	"strconv"
-	"strings"
 	"syscall"
 
 	"github.com/chindada/capitan/internal/config"
@@ -26,7 +23,6 @@ func Start() {
 	ucStream := usecases.NewStream()
 	ucBasic := usecases.NewBasic()
 	ucSystem := usecases.NewSystem()
-	// TODO: `history`
 
 	// HTTP Handler
 	r := router.NewRouter(ucSystem).
@@ -45,9 +41,10 @@ func Start() {
 		logger.Fatalf("API Server error: %s", e)
 	}
 
+	cfg.StartProxy()
 	defer func() {
+		cfg.StopProxy()
 		cfg.CloseDB()
-		tryStopProxyServer()
 		logger.Info("Shut down")
 	}()
 
@@ -80,28 +77,4 @@ func setupStopJob(interrupt chan os.Signal) {
 		}
 	}
 	go s.Start()
-}
-
-// tryStopProxyServer ROOT_PATH should be set only under docker environment.
-func tryStopProxyServer() {
-	rootPath := os.Getenv("ROOT_PATH")
-	if rootPath == "" {
-		return
-	}
-	proxyPID, err := os.ReadFile(filepath.Join(rootPath, "proxy", "proxy.pid"))
-	if err != nil {
-		return
-	}
-	proxyPIDInt, err := strconv.Atoi(strings.ReplaceAll(string(proxyPID), "\n", ""))
-	if err != nil {
-		return
-	}
-	p, e := os.FindProcess(proxyPIDInt)
-	if e != nil {
-		return
-	}
-	e = p.Signal(syscall.SIGQUIT)
-	if e != nil {
-		return
-	}
 }
