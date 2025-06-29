@@ -83,3 +83,18 @@ func (mr *MockEventRepoMockRecorder) SelectLoginEvent(ctx, limit any) *gomock.Ca
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectLoginEvent", reflect.TypeOf((*MockEventRepo)(nil).SelectLoginEvent), ctx, limit)
 }
+
+// SelectShioajiEvent mocks base method.
+func (m *MockEventRepo) SelectShioajiEvent(ctx context.Context) ([]*pb.ShioajiEvent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectShioajiEvent", ctx)
+	ret0, _ := ret[0].([]*pb.ShioajiEvent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectShioajiEvent indicates an expected call of SelectShioajiEvent.
+func (mr *MockEventRepoMockRecorder) SelectShioajiEvent(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectShioajiEvent", reflect.TypeOf((*MockEventRepo)(nil).SelectShioajiEvent), ctx)
+}

@@ -16,6 +16,7 @@ type EventRepo interface {
 	SelectLoginEvent(ctx context.Context, limit int64) ([]*pb.LoginEvent, error)
 
 	InsertShioajiEvent(ctx context.Context, event *pb.ShioajiEvent) error
+	SelectShioajiEvent(ctx context.Context) ([]*pb.ShioajiEvent, error)
 }
 
 type event struct {
@@ -108,7 +109,7 @@ func (r *event) SelectLoginEvent(ctx context.Context, limit int64) ([]*pb.LoginE
 func (r *event) InsertShioajiEvent(ctx context.Context, event *pb.ShioajiEvent) error {
 	builder := r.Builder().
 		Insert(tableNameSystemEventShioaji).
-		Columns("event_code, response, event, info, created_at").
+		Columns("event_code, resp_code, event, info, created_at").
 		Values(
 			event.GetEventCode(),
 			event.GetRespCode(),
@@ -132,4 +133,38 @@ func (r *event) InsertShioajiEvent(ctx context.Context, event *pb.ShioajiEvent) 
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+func (r *event) SelectShioajiEvent(ctx context.Context) ([]*pb.ShioajiEvent, error) {
+	builder := r.Builder().
+		Select("event_code, resp_code, event, info, created_at").
+		From(tableNameSystemEventShioaji).
+		OrderBy("created_at DESC")
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Pool().Query(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []*pb.ShioajiEvent
+	for rows.Next() {
+		event := &pb.ShioajiEvent{}
+		var createdTime time.Time
+		if err = rows.Scan(
+			&event.EventCode,
+			&event.RespCode, &event.Event,
+			&event.Info, &createdTime,
+		); err != nil {
+			return nil, err
+		}
+		event.CreatedAt = timestamppb.New(createdTime)
+		result = append(result, event)
+	}
+	return result, nil
 }

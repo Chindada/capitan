@@ -17,8 +17,14 @@ import (
 
 var mainFutures = []string{"TXF", "MXF", "TMF"}
 
+const (
+	batchSize = 2000
+)
+
 type Basic interface {
-	GetAllStockDetail(ctx context.Context) (*pb.StockDetailList, error)
+	GetAllStockDetail(ctx context.Context) ([]*pb.StockDetail, error)
+	GetAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error)
+	GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error)
 }
 
 type basicUseCase struct {
@@ -56,24 +62,20 @@ func NewBasic() Basic {
 	return uc
 }
 
-func (uc *basicUseCase) GetAllStockDetail(ctx context.Context) (*pb.StockDetailList, error) {
-	return uc.basicClient.GetAllStockDetail(ctx, &emptypb.Empty{})
-}
-
 func (uc *basicUseCase) updateStock() error {
-	stocks, err := uc.GetAllStockDetail(context.Background())
+	stocks, err := uc.basicClient.GetAllStockDetail(context.Background(), &emptypb.Empty{})
 	if err != nil {
 		return err
 	}
-	if len(stocks.GetList()) <= 1000 {
+	if len(stocks.GetList()) <= batchSize {
 		err = uc.basicRepo.InsertStockDetail(context.Background(), stocks.GetList())
 		if err != nil {
 			return err
 		}
 	}
 	spilts := [][]*pb.StockDetail{}
-	for i := 0; i < len(stocks.GetList()); i += 1000 {
-		end := min(i+1000, len(stocks.GetList()))
+	for i := 0; i < len(stocks.GetList()); i += batchSize {
+		end := min(i+batchSize, len(stocks.GetList()))
 		spilts = append(spilts, stocks.GetList()[i:end])
 	}
 	for _, split := range spilts {
@@ -90,15 +92,15 @@ func (uc *basicUseCase) updateFuture() error {
 	if err != nil {
 		return err
 	}
-	if len(futures.GetList()) <= 1000 {
+	if len(futures.GetList()) <= batchSize {
 		err = uc.basicRepo.InsertFutureDetail(context.Background(), futures.GetList())
 		if err != nil {
 			return err
 		}
 	}
 	splits := [][]*pb.FutureDetail{}
-	for i := 0; i < len(futures.GetList()); i += 1000 {
-		end := min(i+1000, len(futures.GetList()))
+	for i := 0; i < len(futures.GetList()); i += batchSize {
+		end := min(i+batchSize, len(futures.GetList()))
 		splits = append(splits, futures.GetList()[i:end])
 	}
 	for _, split := range splits {
@@ -142,15 +144,15 @@ func (uc *basicUseCase) updateOption() error {
 	if err != nil {
 		return err
 	}
-	if len(options.GetList()) <= 1000 {
+	if len(options.GetList()) <= batchSize {
 		err = uc.basicRepo.InsertOptionDetail(context.Background(), options.GetList())
 		if err != nil {
 			return err
 		}
 	}
 	splits := [][]*pb.OptionDetail{}
-	for i := 0; i < len(options.GetList()); i += 1000 {
-		end := min(i+1000, len(options.GetList()))
+	for i := 0; i < len(options.GetList()); i += batchSize {
+		end := min(i+batchSize, len(options.GetList()))
 		splits = append(splits, options.GetList()[i:end])
 	}
 	for _, split := range splits {
@@ -160,4 +162,16 @@ func (uc *basicUseCase) updateOption() error {
 		}
 	}
 	return nil
+}
+
+func (uc *basicUseCase) GetAllStockDetail(ctx context.Context) ([]*pb.StockDetail, error) {
+	return uc.basicRepo.SelectAllStockDetail(ctx)
+}
+
+func (uc *basicUseCase) GetAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error) {
+	return uc.basicRepo.SelectAllFutureDetail(ctx)
+}
+
+func (uc *basicUseCase) GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error) {
+	return uc.basicRepo.SelectAllOptionDetail(ctx)
 }

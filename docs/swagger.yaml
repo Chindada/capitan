@@ -93,6 +93,13 @@ definitions:
       update_date:
         type: string
     type: object
+  pb.FutureDetailList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.FutureDetail'
+        type: array
+    type: object
   pb.LoginEvent:
     properties:
       created_at:
@@ -194,6 +201,13 @@ definitions:
       update_date:
         type: string
     type: object
+  pb.OptionDetailList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.OptionDetail'
+        type: array
+    type: object
   pb.OrderAction:
     enum:
     - 0
@@ -248,6 +262,26 @@ definitions:
         type: string
       start_time:
         $ref: '#/definitions/timestamppb.Timestamp'
+    type: object
+  pb.ShioajiEvent:
+    properties:
+      created_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      event:
+        type: string
+      event_code:
+        type: integer
+      info:
+        type: string
+      resp_code:
+        type: integer
+    type: object
+  pb.ShioajiEventList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.ShioajiEvent'
+        type: array
     type: object
   pb.StockDetail:
     properties:
@@ -415,6 +449,54 @@ info:
   title: Capitan V1 OpenAPI
   version: v0.0
 paths:
+  /api/capitan/v1/basic/futures:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.FutureDetailList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get futures
+      tags:
+      - Basic V1
+  /api/capitan/v1/basic/options:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.OptionDetailList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get options
+      tags:
+      - Basic V1
   /api/capitan/v1/basic/stocks:
     get:
       consumes:
@@ -453,6 +535,26 @@ paths:
       security:
       - JWT: []
       summary: Get login events
+      tags:
+      - Event V1
+  /api/capitan/v1/event/shioaji:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ShioajiEventList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get shioaji events
       tags:
       - Event V1
   /api/capitan/v1/login:

@@ -5,6 +5,7 @@ import (
 
 	"github.com/chindada/capitan/internal/controller/http/resp"
 	"github.com/chindada/capitan/internal/usecases"
+	"github.com/chindada/panther/golang/pb"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,8 @@ func NewBasicRoutes(handler *gin.RouterGroup, t usecases.Basic) {
 	h := handler.Group("/basic")
 	{
 		h.GET("/stocks", r.getStocks)
+		h.GET("/futures", r.getFutures)
+		h.GET("/options", r.getOptions)
 	}
 }
 
@@ -38,5 +41,51 @@ func (r *basicRoutes) getStocks(c *gin.Context) {
 		resp.Fail(c, http.StatusInternalServerError, err)
 		return
 	}
-	resp.Success(c, http.StatusOK, stocks)
+	resp.Success(c, http.StatusOK, &pb.StockDetailList{
+		List: stocks,
+	})
+}
+
+// getFutures -.
+//
+//	@Tags		Basic V1
+//	@Summary	Get futures
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.FutureDetailList
+//	@Failure	400	{object}	pb.APIResponse
+//	@Failure	500	{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/futures [get]
+func (r *basicRoutes) getFutures(c *gin.Context) {
+	data, err := r.t.GetAllFutureDetail(c)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, &pb.FutureDetailList{
+		List: data,
+	})
+}
+
+// getOptions -.
+//
+//	@Tags		Basic V1
+//	@Summary	Get options
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.OptionDetailList
+//	@Failure	400	{object}	pb.APIResponse
+//	@Failure	500	{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/options [get]
+func (r *basicRoutes) getOptions(c *gin.Context) {
+	data, err := r.t.GetAllOptionDetail(c)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, &pb.OptionDetailList{
+		List: data,
+	})
 }

@@ -6,12 +6,9 @@ import (
 	"sync"
 
 	"github.com/chindada/capitan/internal/config"
-	"github.com/chindada/capitan/internal/usecases/repo"
 	"github.com/chindada/leopard/pkg/eventbus"
 	"github.com/chindada/leopard/pkg/log"
 	"github.com/chindada/panther/golang/pb"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 //go:generate mockgen -source=usecase_stream.go -destination=./mocks/mocks_usecase_stream_test.go -package=mocks
@@ -22,8 +19,6 @@ type Stream interface {
 }
 
 type streamUseCase struct {
-	eventRepo repo.EventRepo
-
 	logger *log.Log
 	bus    *eventbus.Bus
 
@@ -38,9 +33,7 @@ type streamUseCase struct {
 
 func NewStream() Stream {
 	cfg := config.Get()
-	pg := cfg.GetPostgresPool()
 	uc := &streamUseCase{
-		eventRepo:           repo.NewEventRepo(pg),
 		logger:              log.Get(),
 		bus:                 eventbus.Get(),
 		streamClient:        pb.NewStreamInterfaceClient(cfg.GetGRPCConn()),
@@ -51,7 +44,6 @@ func NewStream() Stream {
 
 	go uc.sendFutureTick()
 	go uc.sendFutureBidAsk()
-	go uc.subscribeShioajiEvent()
 
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureTick, false, uc.subscribeFutureTick)
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureBidAsk, false, uc.subscribeFutureBidAsk)
@@ -78,26 +70,6 @@ func (uc *streamUseCase) sendFutureBidAsk() {
 			client.BidAskChannel <- bidAsk
 		}
 		uc.futureClientLock.RUnlock()
-	}
-}
-
-func (uc *streamUseCase) subscribeShioajiEvent() {
-	eventStream, err := uc.streamClient.SubscribeShioajiEvent(context.Background(), &emptypb.Empty{})
-	if err != nil {
-		s := status.Convert(err)
-		uc.logger.Fatalf("Error(%d): %s", s.Code(), s.Message())
-	}
-	for {
-		event, rErr := eventStream.Recv()
-		if rErr != nil {
-			s := status.Convert(rErr)
-			uc.logger.Fatalf("Error(%d): %s", s.Code(), s.Message())
-		}
-		err = uc.eventRepo.InsertShioajiEvent(context.Background(), event)
-		if err != nil {
-			uc.logger.Errorf("Failed to insert shioaji event: %v", err)
-			continue
-		}
 	}
 }
 

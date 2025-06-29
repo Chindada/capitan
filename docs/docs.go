@@ -15,6 +15,84 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/capitan/v1/basic/futures": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Get futures",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.FutureDetailList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/basic/options": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Get options",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.OptionDetailList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/basic/stocks": {
             "get": {
                 "security": [
@@ -76,6 +154,39 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/pb.LoginEventList"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/event/shioaji": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event V1"
+                ],
+                "summary": "Get shioaji events",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ShioajiEventList"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
                         }
                     }
                 }
@@ -943,6 +1054,17 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.FutureDetailList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.FutureDetail"
+                    }
+                }
+            }
+        },
         "pb.LoginEvent": {
             "type": "object",
             "properties": {
@@ -1093,6 +1215,17 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.OptionDetailList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.OptionDetail"
+                    }
+                }
+            }
+        },
         "pb.OrderAction": {
             "type": "integer",
             "enum": [
@@ -1159,6 +1292,37 @@ const docTemplate = `{
                 },
                 "start_time": {
                     "$ref": "#/definitions/timestamppb.Timestamp"
+                }
+            }
+        },
+        "pb.ShioajiEvent": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                },
+                "event": {
+                    "type": "string"
+                },
+                "event_code": {
+                    "type": "integer"
+                },
+                "info": {
+                    "type": "string"
+                },
+                "resp_code": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.ShioajiEventList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.ShioajiEvent"
+                    }
                 }
             }
         },

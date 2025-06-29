@@ -41,11 +41,41 @@ func (m *MockBasic) EXPECT() *MockBasicMockRecorder {
 	return m.recorder
 }
 
+// GetAllFutureDetail mocks base method.
+func (m *MockBasic) GetAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllFutureDetail", ctx)
+	ret0, _ := ret[0].([]*pb.FutureDetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllFutureDetail indicates an expected call of GetAllFutureDetail.
+func (mr *MockBasicMockRecorder) GetAllFutureDetail(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllFutureDetail", reflect.TypeOf((*MockBasic)(nil).GetAllFutureDetail), ctx)
+}
+
+// GetAllOptionDetail mocks base method.
+func (m *MockBasic) GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllOptionDetail", ctx)
+	ret0, _ := ret[0].([]*pb.OptionDetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllOptionDetail indicates an expected call of GetAllOptionDetail.
+func (mr *MockBasicMockRecorder) GetAllOptionDetail(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllOptionDetail", reflect.TypeOf((*MockBasic)(nil).GetAllOptionDetail), ctx)
+}
+
 // GetAllStockDetail mocks base method.
-func (m *MockBasic) GetAllStockDetail(ctx context.Context) (*pb.StockDetailList, error) {
+func (m *MockBasic) GetAllStockDetail(ctx context.Context) ([]*pb.StockDetail, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllStockDetail", ctx)
-	ret0, _ := ret[0].(*pb.StockDetailList)
+	ret0, _ := ret[0].([]*pb.StockDetail)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

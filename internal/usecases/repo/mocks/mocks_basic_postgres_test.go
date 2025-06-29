@@ -97,3 +97,48 @@ func (mr *MockBasicRepoMockRecorder) SearchFutureDetail(ctx, code any) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchFutureDetail", reflect.TypeOf((*MockBasicRepo)(nil).SearchFutureDetail), ctx, code)
 }
+
+// SelectAllFutureDetail mocks base method.
+func (m *MockBasicRepo) SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectAllFutureDetail", ctx)
+	ret0, _ := ret[0].([]*pb.FutureDetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectAllFutureDetail indicates an expected call of SelectAllFutureDetail.
+func (mr *MockBasicRepoMockRecorder) SelectAllFutureDetail(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllFutureDetail", reflect.TypeOf((*MockBasicRepo)(nil).SelectAllFutureDetail), ctx)
+}
+
+// SelectAllOptionDetail mocks base method.
+func (m *MockBasicRepo) SelectAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectAllOptionDetail", ctx)
+	ret0, _ := ret[0].([]*pb.OptionDetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectAllOptionDetail indicates an expected call of SelectAllOptionDetail.
+func (mr *MockBasicRepoMockRecorder) SelectAllOptionDetail(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllOptionDetail", reflect.TypeOf((*MockBasicRepo)(nil).SelectAllOptionDetail), ctx)
+}
+
+// SelectAllStockDetail mocks base method.
+func (m *MockBasicRepo) SelectAllStockDetail(ctx context.Context) ([]*pb.StockDetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectAllStockDetail", ctx)
+	ret0, _ := ret[0].([]*pb.StockDetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectAllStockDetail indicates an expected call of SelectAllStockDetail.
+func (mr *MockBasicRepoMockRecorder) SelectAllStockDetail(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllStockDetail", reflect.TypeOf((*MockBasicRepo)(nil).SelectAllStockDetail), ctx)
+}

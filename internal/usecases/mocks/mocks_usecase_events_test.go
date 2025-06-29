@@ -53,3 +53,18 @@ func (mr *MockEventsMockRecorder) GetCurrentLoginEvent() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentLoginEvent", reflect.TypeOf((*MockEvents)(nil).GetCurrentLoginEvent))
 }
+
+// GetShioajiEvent mocks base method.
+func (m *MockEvents) GetShioajiEvent() ([]*pb.ShioajiEvent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetShioajiEvent")
+	ret0, _ := ret[0].([]*pb.ShioajiEvent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetShioajiEvent indicates an expected call of GetShioajiEvent.
+func (mr *MockEventsMockRecorder) GetShioajiEvent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShioajiEvent", reflect.TypeOf((*MockEvents)(nil).GetShioajiEvent))
+}
