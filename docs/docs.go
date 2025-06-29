@@ -450,6 +450,124 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/capitan/v1/trade/records": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Get all trade records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.TradeList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Get trade records by request",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/emptypb.Empty"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Get trade records by request",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.QueryTradeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.TradeList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/user": {
             "put": {
                 "security": [
@@ -751,6 +869,80 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.FutureDetail": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "day_trade": {
+                    "type": "string"
+                },
+                "delivery_date": {
+                    "type": "string"
+                },
+                "delivery_month": {
+                    "type": "string"
+                },
+                "exchange": {
+                    "type": "string"
+                },
+                "limit_down": {
+                    "type": "number"
+                },
+                "limit_up": {
+                    "type": "number"
+                },
+                "margin_trading_balance": {
+                    "type": "integer"
+                },
+                "multiplier": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "option_right": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "number"
+                },
+                "security_type": {
+                    "type": "string"
+                },
+                "short_selling_balance": {
+                    "type": "integer"
+                },
+                "strike_price": {
+                    "type": "integer"
+                },
+                "symbol": {
+                    "type": "string"
+                },
+                "target_code": {
+                    "type": "string"
+                },
+                "underlying_code": {
+                    "type": "string"
+                },
+                "underlying_kind": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "integer"
+                },
+                "update_date": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.LoginEvent": {
             "type": "object",
             "properties": {
@@ -824,6 +1016,149 @@ const docTemplate = `{
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "pb.OptionDetail": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "day_trade": {
+                    "type": "string"
+                },
+                "delivery_date": {
+                    "type": "string"
+                },
+                "delivery_month": {
+                    "type": "string"
+                },
+                "exchange": {
+                    "type": "string"
+                },
+                "limit_down": {
+                    "type": "number"
+                },
+                "limit_up": {
+                    "type": "number"
+                },
+                "margin_trading_balance": {
+                    "type": "integer"
+                },
+                "multiplier": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "option_right": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "number"
+                },
+                "security_type": {
+                    "type": "string"
+                },
+                "short_selling_balance": {
+                    "type": "integer"
+                },
+                "strike_price": {
+                    "type": "number"
+                },
+                "symbol": {
+                    "type": "string"
+                },
+                "target_code": {
+                    "type": "string"
+                },
+                "underlying_code": {
+                    "type": "string"
+                },
+                "underlying_kind": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "integer"
+                },
+                "update_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.OrderAction": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "OrderAction_ORDER_ACTION_UNKNOWN",
+                "OrderAction_ORDER_ACTION_BUY",
+                "OrderAction_ORDER_ACTION_SELL"
+            ]
+        },
+        "pb.OrderStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+            ],
+            "x-enum-varnames": [
+                "OrderStatus_ORDER_STATUS_UNKNOWN",
+                "OrderStatus_ORDER_STATUS_CANCELLED",
+                "OrderStatus_ORDER_STATUS_FILLED",
+                "OrderStatus_ORDER_STATUS_PART_FILLED",
+                "OrderStatus_ORDER_STATUS_INACTIVE",
+                "OrderStatus_ORDER_STATUS_FAILED",
+                "OrderStatus_ORDER_STATUS_PENDING_SUBMIT",
+                "OrderStatus_ORDER_STATUS_PRE_SUBMITTED",
+                "OrderStatus_ORDER_STATUS_SUBMITTED"
+            ]
+        },
+        "pb.OrderType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "x-enum-varnames": [
+                "OrderType_TYPE_UNKNOWN",
+                "OrderType_TYPE_STOCK_LOT",
+                "OrderType_TYPE_STOCK_SHARE",
+                "OrderType_TYPE_FUTURE",
+                "OrderType_TYPE_OPTION"
+            ]
+        },
+        "pb.QueryTradeRequest": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
                 }
             }
         },
@@ -937,6 +1272,61 @@ const docTemplate = `{
                 },
                 "web": {
                     "$ref": "#/definitions/pb.SystemBuild"
+                }
+            }
+        },
+        "pb.Trade": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/pb.OrderAction"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "filled_quantity": {
+                    "type": "integer"
+                },
+                "future": {
+                    "$ref": "#/definitions/pb.FutureDetail"
+                },
+                "option": {
+                    "$ref": "#/definitions/pb.OptionDetail"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "order_time": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/pb.OrderStatus"
+                },
+                "stock": {
+                    "$ref": "#/definitions/pb.StockDetail"
+                },
+                "type": {
+                    "$ref": "#/definitions/pb.OrderType"
+                },
+                "uid": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TradeList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.Trade"
+                    }
                 }
             }
         },

@@ -116,7 +116,7 @@ func (r *Router) AddV1SystemRoutes(system usecases.System) *Router {
 }
 
 func (r *Router) AddV1TradeRoutes(trade usecases.Trade) *Router {
-	v1.NewTradeRoutes(r.v1WSGroup, trade)
+	v1.NewTradeRoutes(r.v1Group, r.v1WSGroup, trade)
 	return r
 }
 

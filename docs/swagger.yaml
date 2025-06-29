@@ -44,6 +44,55 @@ definitions:
       username:
         type: string
     type: object
+  pb.FutureDetail:
+    properties:
+      category:
+        type: string
+      code:
+        type: string
+      currency:
+        type: string
+      day_trade:
+        type: string
+      delivery_date:
+        type: string
+      delivery_month:
+        type: string
+      exchange:
+        type: string
+      limit_down:
+        type: number
+      limit_up:
+        type: number
+      margin_trading_balance:
+        type: integer
+      multiplier:
+        type: integer
+      name:
+        type: string
+      option_right:
+        type: string
+      reference:
+        type: number
+      security_type:
+        type: string
+      short_selling_balance:
+        type: integer
+      strike_price:
+        type: integer
+      symbol:
+        type: string
+      target_code:
+        type: string
+      underlying_code:
+        type: string
+      underlying_kind:
+        type: string
+      unit:
+        type: integer
+      update_date:
+        type: string
+    type: object
   pb.LoginEvent:
     properties:
       created_at:
@@ -95,6 +144,110 @@ definitions:
         type: string
       token:
         type: string
+    type: object
+  pb.OptionDetail:
+    properties:
+      category:
+        type: string
+      code:
+        type: string
+      currency:
+        type: string
+      day_trade:
+        type: string
+      delivery_date:
+        type: string
+      delivery_month:
+        type: string
+      exchange:
+        type: string
+      limit_down:
+        type: number
+      limit_up:
+        type: number
+      margin_trading_balance:
+        type: integer
+      multiplier:
+        type: integer
+      name:
+        type: string
+      option_right:
+        type: string
+      reference:
+        type: number
+      security_type:
+        type: string
+      short_selling_balance:
+        type: integer
+      strike_price:
+        type: number
+      symbol:
+        type: string
+      target_code:
+        type: string
+      underlying_code:
+        type: string
+      underlying_kind:
+        type: string
+      unit:
+        type: integer
+      update_date:
+        type: string
+    type: object
+  pb.OrderAction:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - OrderAction_ORDER_ACTION_UNKNOWN
+    - OrderAction_ORDER_ACTION_BUY
+    - OrderAction_ORDER_ACTION_SELL
+  pb.OrderStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    type: integer
+    x-enum-varnames:
+    - OrderStatus_ORDER_STATUS_UNKNOWN
+    - OrderStatus_ORDER_STATUS_CANCELLED
+    - OrderStatus_ORDER_STATUS_FILLED
+    - OrderStatus_ORDER_STATUS_PART_FILLED
+    - OrderStatus_ORDER_STATUS_INACTIVE
+    - OrderStatus_ORDER_STATUS_FAILED
+    - OrderStatus_ORDER_STATUS_PENDING_SUBMIT
+    - OrderStatus_ORDER_STATUS_PRE_SUBMITTED
+    - OrderStatus_ORDER_STATUS_SUBMITTED
+  pb.OrderType:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-varnames:
+    - OrderType_TYPE_UNKNOWN
+    - OrderType_TYPE_STOCK_LOT
+    - OrderType_TYPE_STOCK_SHARE
+    - OrderType_TYPE_FUTURE
+    - OrderType_TYPE_OPTION
+  pb.QueryTradeRequest:
+    properties:
+      end_time:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      order_id:
+        type: string
+      start_time:
+        $ref: '#/definitions/timestamppb.Timestamp'
     type: object
   pb.StockDetail:
     properties:
@@ -169,6 +322,42 @@ definitions:
         $ref: '#/definitions/timestamppb.Timestamp'
       web:
         $ref: '#/definitions/pb.SystemBuild'
+    type: object
+  pb.Trade:
+    properties:
+      action:
+        $ref: '#/definitions/pb.OrderAction'
+      code:
+        type: string
+      filled_quantity:
+        type: integer
+      future:
+        $ref: '#/definitions/pb.FutureDetail'
+      option:
+        $ref: '#/definitions/pb.OptionDetail'
+      order_id:
+        type: string
+      order_time:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      price:
+        type: number
+      quantity:
+        type: integer
+      status:
+        $ref: '#/definitions/pb.OrderStatus'
+      stock:
+        $ref: '#/definitions/pb.StockDetail'
+      type:
+        $ref: '#/definitions/pb.OrderType'
+      uid:
+        type: string
+    type: object
+  pb.TradeList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.Trade'
+        type: array
     type: object
   pb.User:
     properties:
@@ -495,6 +684,79 @@ paths:
       summary: Get system info
       tags:
       - System V1
+  /api/capitan/v1/trade/records:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.TradeList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get all trade records
+      tags:
+      - Trade V1
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.QueryTradeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.TradeList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get trade records by request
+      tags:
+      - Trade V1
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get trade records by request
+      tags:
+      - Trade V1
   /api/capitan/v1/user:
     delete:
       consumes:

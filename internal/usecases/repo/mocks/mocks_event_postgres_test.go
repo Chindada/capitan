@@ -55,6 +55,20 @@ func (mr *MockEventRepoMockRecorder) InsertLoginEvent(ctx, events any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertLoginEvent", reflect.TypeOf((*MockEventRepo)(nil).InsertLoginEvent), ctx, events)
 }
 
+// InsertShioajiEvent mocks base method.
+func (m *MockEventRepo) InsertShioajiEvent(ctx context.Context, event *pb.ShioajiEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertShioajiEvent", ctx, event)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertShioajiEvent indicates an expected call of InsertShioajiEvent.
+func (mr *MockEventRepoMockRecorder) InsertShioajiEvent(ctx, event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertShioajiEvent", reflect.TypeOf((*MockEventRepo)(nil).InsertShioajiEvent), ctx, event)
+}
+
 // SelectLoginEvent mocks base method.
 func (m *MockEventRepo) SelectLoginEvent(ctx context.Context, limit int64) ([]*pb.LoginEvent, error) {
 	m.ctrl.T.Helper()

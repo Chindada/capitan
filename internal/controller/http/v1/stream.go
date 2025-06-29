@@ -32,7 +32,7 @@ func NewStreamRoutes(ws *gin.RouterGroup, t usecases.Stream) {
 	}
 }
 
-// triggerWorkshop /ws/capitan/v1/stream/futures/trigger [get].
+// streamFutrues /ws/capitan/v1/stream/futures/trigger [get].
 func (r *streamRoutes) streamFutrues(c *gin.Context) {
 	forwardChan := make(chan []byte)
 	ws, err := ws.New(c, forwardChan)
@@ -76,6 +76,7 @@ func (r *streamRoutes) sendTick(ws ws.WS) chan *pb.FutureTick {
 			if mErr == nil {
 				ws.WriteBinaryMessage(b)
 			}
+			r.futureTickPool.Put(tick)
 		}
 	}()
 	return channel
@@ -98,6 +99,7 @@ func (r *streamRoutes) sendBidAsk(ws ws.WS) chan *pb.FutureBidAsk {
 			if mErr == nil {
 				ws.WriteBinaryMessage(b)
 			}
+			r.futureBidAskPool.Put(bidAsk)
 		}
 	}()
 	return channel

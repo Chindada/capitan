@@ -14,6 +14,8 @@ import (
 type EventRepo interface {
 	InsertLoginEvent(ctx context.Context, events []*pb.LoginEvent) error
 	SelectLoginEvent(ctx context.Context, limit int64) ([]*pb.LoginEvent, error)
+
+	InsertShioajiEvent(ctx context.Context, event *pb.ShioajiEvent) error
 }
 
 type event struct {
@@ -101,4 +103,33 @@ func (r *event) SelectLoginEvent(ctx context.Context, limit int64) ([]*pb.LoginE
 		result = append(result, &event)
 	}
 	return result, nil
+}
+
+func (r *event) InsertShioajiEvent(ctx context.Context, event *pb.ShioajiEvent) error {
+	builder := r.Builder().
+		Insert(tableNameSystemEventShioaji).
+		Columns("event_code, response, event, info, created_at").
+		Values(
+			event.GetEventCode(),
+			event.GetRespCode(),
+			event.GetEvent(),
+			event.GetInfo(),
+			time.Now(),
+		)
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer r.Rollback(ctx, tx)
+
+	if _, err = tx.Exec(ctx, sql, args...); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }

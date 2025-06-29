@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/chindada/capitan/internal/config"
+	"github.com/chindada/capitan/internal/usecases/repo"
 	"github.com/chindada/leopard/pkg/eventbus"
 	"github.com/chindada/leopard/pkg/log"
 	"github.com/chindada/panther/golang/pb"
@@ -21,6 +22,8 @@ type Stream interface {
 }
 
 type streamUseCase struct {
+	eventRepo repo.EventRepo
+
 	logger *log.Log
 	bus    *eventbus.Bus
 
@@ -35,7 +38,9 @@ type streamUseCase struct {
 
 func NewStream() Stream {
 	cfg := config.Get()
+	pg := cfg.GetPostgresPool()
 	uc := &streamUseCase{
+		eventRepo:           repo.NewEventRepo(pg),
 		logger:              log.Get(),
 		bus:                 eventbus.Get(),
 		streamClient:        pb.NewStreamInterfaceClient(cfg.GetGRPCConn()),
@@ -88,8 +93,11 @@ func (uc *streamUseCase) subscribeShioajiEvent() {
 			s := status.Convert(rErr)
 			uc.logger.Fatalf("Error(%d): %s", s.Code(), s.Message())
 		}
-		uc.logger.Warnf("Resp code: %d, Event code: %d, Info: %s, Event: %s",
-			event.GetRespCode(), event.GetEventCode(), event.GetInfo(), event.GetEvent())
+		err = uc.eventRepo.InsertShioajiEvent(context.Background(), event)
+		if err != nil {
+			uc.logger.Errorf("Failed to insert shioaji event: %v", err)
+			continue
+		}
 	}
 }
 
