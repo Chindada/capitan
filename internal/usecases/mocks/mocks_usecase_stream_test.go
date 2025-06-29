@@ -52,14 +52,38 @@ func (mr *MockStreamMockRecorder) CloseFutureClient(clientID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseFutureClient", reflect.TypeOf((*MockStream)(nil).CloseFutureClient), clientID)
 }
 
-// CreateFutureClient mocks base method.
-func (m *MockStream) CreateFutureClient(clientID string, client *usecases.FutureClient) {
+// CloseSingleFutureClient mocks base method.
+func (m *MockStream) CloseSingleFutureClient(clientID, code string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CreateFutureClient", clientID, client)
+	m.ctrl.Call(m, "CloseSingleFutureClient", clientID, code)
+}
+
+// CloseSingleFutureClient indicates an expected call of CloseSingleFutureClient.
+func (mr *MockStreamMockRecorder) CloseSingleFutureClient(clientID, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSingleFutureClient", reflect.TypeOf((*MockStream)(nil).CloseSingleFutureClient), clientID, code)
+}
+
+// CreateFutureClient mocks base method.
+func (m *MockStream) CreateFutureClient(client *usecases.FutureClient) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CreateFutureClient", client)
 }
 
 // CreateFutureClient indicates an expected call of CreateFutureClient.
-func (mr *MockStreamMockRecorder) CreateFutureClient(clientID, client any) *gomock.Call {
+func (mr *MockStreamMockRecorder) CreateFutureClient(client any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFutureClient", reflect.TypeOf((*MockStream)(nil).CreateFutureClient), clientID, client)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFutureClient", reflect.TypeOf((*MockStream)(nil).CreateFutureClient), client)
+}
+
+// CreateSingleFutureClient mocks base method.
+func (m *MockStream) CreateSingleFutureClient(code string, client *usecases.FutureClient) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CreateSingleFutureClient", code, client)
+}
+
+// CreateSingleFutureClient indicates an expected call of CreateSingleFutureClient.
+func (mr *MockStreamMockRecorder) CreateSingleFutureClient(code, client any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSingleFutureClient", reflect.TypeOf((*MockStream)(nil).CreateSingleFutureClient), code, client)
 }

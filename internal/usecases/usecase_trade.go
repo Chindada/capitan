@@ -151,12 +151,6 @@ func (uc *tradeUseCase) CloseTradeClient(clientID string) {
 
 	if c, exist := uc.tradeClientMap[clientID]; exist {
 		close(c)
-		for {
-			_, ok := <-c
-			if !ok {
-				break
-			}
-		}
 		delete(uc.tradeClientMap, clientID)
 	}
 }

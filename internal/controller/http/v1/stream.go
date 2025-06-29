@@ -28,12 +28,46 @@ func NewStreamRoutes(ws *gin.RouterGroup, t usecases.Stream) {
 	}
 	w := ws.Group("/stream")
 	{
-		w.GET("/futures/trigger", r.streamFutrues)
+		w.GET("/futures/trigger", r.streamAllFutrues)
+		w.GET("/futures/single/trigger", r.streamSingleFutrues)
 	}
 }
 
-// streamFutrues /ws/capitan/v1/stream/futures/trigger [get].
-func (r *streamRoutes) streamFutrues(c *gin.Context) {
+// streamSingleFutrues /ws/capitan/v1/stream/futures/single/trigger [get].
+func (r *streamRoutes) streamSingleFutrues(c *gin.Context) {
+	code := c.Query("code")
+	if code == "" {
+		resp.Fail(c, http.StatusBadRequest, resp.ErrNotFound)
+		return
+	}
+	forwardChan := make(chan []byte)
+	ws, err := ws.New(c, forwardChan)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	clientID := uuid.NewString()
+	go func() {
+		defer func() {
+			r.t.CloseSingleFutureClient(clientID, code)
+		}()
+		for {
+			r.t.CreateSingleFutureClient(code, &usecases.FutureClient{
+				ClientID:      clientID,
+				TickChannel:   r.sendTick(ws),
+				BidAskChannel: r.sendBidAsk(ws),
+			})
+			_, ok := <-forwardChan
+			if !ok {
+				break
+			}
+		}
+	}()
+	ws.ReadMessage()
+}
+
+// streamAllFutrues /ws/capitan/v1/stream/futures/trigger [get].
+func (r *streamRoutes) streamAllFutrues(c *gin.Context) {
 	forwardChan := make(chan []byte)
 	ws, err := ws.New(c, forwardChan)
 	if err != nil {
@@ -46,7 +80,8 @@ func (r *streamRoutes) streamFutrues(c *gin.Context) {
 			r.t.CloseFutureClient(clientID)
 		}()
 		for {
-			r.t.CreateFutureClient(clientID, &usecases.FutureClient{
+			r.t.CreateFutureClient(&usecases.FutureClient{
+				ClientID:      clientID,
 				TickChannel:   r.sendTick(ws),
 				BidAskChannel: r.sendBidAsk(ws),
 			})

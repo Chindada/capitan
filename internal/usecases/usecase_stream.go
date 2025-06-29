@@ -14,8 +14,11 @@ import (
 //go:generate mockgen -source=usecase_stream.go -destination=./mocks/mocks_usecase_stream_test.go -package=mocks
 
 type Stream interface {
-	CreateFutureClient(clientID string, client *FutureClient)
+	CreateFutureClient(client *FutureClient)
 	CloseFutureClient(clientID string)
+
+	CreateSingleFutureClient(code string, client *FutureClient)
+	CloseSingleFutureClient(clientID, code string)
 }
 
 type streamUseCase struct {
@@ -23,6 +26,8 @@ type streamUseCase struct {
 	bus    *eventbus.Bus
 
 	streamClient pb.StreamInterfaceClient
+
+	singleFutureClientMap sync.Map
 
 	futureClientMap  map[string]*FutureClient
 	futureClientLock sync.RWMutex
@@ -51,9 +56,29 @@ func NewStream() Stream {
 	return uc
 }
 
+func (uc *streamUseCase) sendSingleFutureTick() chan *pb.FutureTick {
+	ch := make(chan *pb.FutureTick)
+	go func() {
+		for {
+			tick := <-ch
+			channels, ok := uc.singleFutureClientMap.Load(tick.GetCode())
+			if !ok {
+				continue
+			}
+			chs, _ := channels.([]*FutureClient)
+			for _, client := range chs {
+				client.TickChannel <- tick
+			}
+		}
+	}()
+	return ch
+}
+
 func (uc *streamUseCase) sendFutureTick() {
+	singleChannel := uc.sendSingleFutureTick()
 	for {
 		tick := <-uc.clientTickChannel
+		singleChannel <- tick
 		uc.futureClientLock.RLock()
 		for _, client := range uc.futureClientMap {
 			client.TickChannel <- tick
@@ -62,9 +87,29 @@ func (uc *streamUseCase) sendFutureTick() {
 	}
 }
 
+func (uc *streamUseCase) sendSingleFutureBidAsk() chan *pb.FutureBidAsk {
+	ch := make(chan *pb.FutureBidAsk)
+	go func() {
+		for {
+			bidAsk := <-ch
+			channels, ok := uc.singleFutureClientMap.Load(bidAsk.GetCode())
+			if !ok {
+				continue
+			}
+			chs, _ := channels.([]*FutureClient)
+			for _, client := range chs {
+				client.BidAskChannel <- bidAsk
+			}
+		}
+	}()
+	return ch
+}
+
 func (uc *streamUseCase) sendFutureBidAsk() {
+	singleChannel := uc.sendSingleFutureBidAsk()
 	for {
 		bidAsk := <-uc.clientBidAskChannel
+		singleChannel <- bidAsk
 		uc.futureClientLock.RLock()
 		for _, client := range uc.futureClientMap {
 			client.BidAskChannel <- bidAsk
@@ -110,13 +155,14 @@ func (uc *streamUseCase) subscribeFutureBidAsk(code string) {
 }
 
 type FutureClient struct {
+	ClientID      string
 	TickChannel   chan *pb.FutureTick
 	BidAskChannel chan *pb.FutureBidAsk
 }
 
-func (uc *streamUseCase) CreateFutureClient(clientID string, client *FutureClient) {
+func (uc *streamUseCase) CreateFutureClient(client *FutureClient) {
 	uc.futureClientLock.Lock()
-	uc.futureClientMap[clientID] = client
+	uc.futureClientMap[client.ClientID] = client
 	uc.futureClientLock.Unlock()
 }
 
@@ -131,18 +177,39 @@ func (uc *streamUseCase) CloseFutureClient(clientID string) {
 	if c, exist := uc.futureClientMap[clientID]; exist {
 		close(c.TickChannel)
 		close(c.BidAskChannel)
-		for {
-			_, ok := <-c.TickChannel
-			if !ok {
-				break
-			}
-		}
-		for {
-			_, ok := <-c.BidAskChannel
-			if !ok {
-				break
-			}
-		}
 		delete(uc.futureClientMap, clientID)
+	}
+}
+
+func (uc *streamUseCase) CreateSingleFutureClient(code string, client *FutureClient) {
+	channels, _ := uc.singleFutureClientMap.LoadOrStore(code, []*FutureClient{})
+	chs, _ := channels.([]*FutureClient)
+	chs = append(chs, client)
+	uc.singleFutureClientMap.Store(code, chs)
+}
+
+func (uc *streamUseCase) CloseSingleFutureClient(clientID, code string) {
+	if clientID == "" || code == "" {
+		return
+	}
+
+	channels, exist := uc.singleFutureClientMap.Load(code)
+	if !exist {
+		return
+	}
+
+	chs, _ := channels.([]*FutureClient)
+	for i, c := range chs {
+		if c.ClientID == clientID {
+			close(c.TickChannel)
+			close(c.BidAskChannel)
+			chs = append(chs[:i], chs[i+1:]...)
+			break
+		}
+	}
+	if len(chs) == 0 {
+		uc.singleFutureClientMap.Delete(code)
+	} else {
+		uc.singleFutureClientMap.Store(code, chs)
 	}
 }
