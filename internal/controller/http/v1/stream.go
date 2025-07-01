@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type streamRoutes struct {
@@ -20,17 +21,45 @@ type streamRoutes struct {
 	futureBidAskPool sync.Pool
 }
 
-func NewStreamRoutes(ws *gin.RouterGroup, t usecases.Stream) {
+func NewStreamRoutes(handler *gin.RouterGroup, ws *gin.RouterGroup, t usecases.Stream) {
 	r := &streamRoutes{
 		t:                t,
 		futureTickPool:   sync.Pool{New: func() any { return &pb.FutureStream_Tick{} }},
 		futureBidAskPool: sync.Pool{New: func() any { return &pb.FutureStream_BidAsk{} }},
 	}
-	w := ws.Group("/stream")
+	base := "/stream"
+	h := handler.Group(base)
+	{
+		h.GET("/subscribe/codes", r.getAllSubscribeCodes)
+	}
+	w := ws.Group(base)
 	{
 		w.GET("/futures/trigger", r.streamAllFutrues)
 		w.GET("/futures/single/trigger", r.streamSingleFutrues)
 	}
+}
+
+// getAllRecords -.
+//
+//	@Tags		Stream V1
+//	@Summary	Get all trade records
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	structpb.ListValue
+//	@Router		/api/capitan/v1/stream/subscribe/codes [get]
+func (r *streamRoutes) getAllSubscribeCodes(c *gin.Context) {
+	codes := r.t.GetAllSubscribeCodes()
+	arr := make([]any, len(codes))
+	for i, code := range codes {
+		arr[i] = code
+	}
+	pbArr, err := structpb.NewList(arr)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, pbArr)
 }
 
 // streamSingleFutrues /ws/capitan/v1/stream/futures/single/trigger [get].

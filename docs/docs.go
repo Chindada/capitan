@@ -15,6 +15,45 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/capitan/v1/basic/future/kbar": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Get futures",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.HistoryKbarList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/basic/futures": {
             "get": {
                 "security": [
@@ -281,6 +320,33 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/stream/subscribe/codes": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stream V1"
+                ],
+                "summary": "Get all trade records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/structpb.ListValue"
                         }
                     }
                 }
@@ -561,6 +627,180 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/capitan/v1/trade/buy/future": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Buy future",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.BaseOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.Trade"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/trade/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Cancel trade",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.BaseOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.Trade"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/trade/future/position": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Get all future positions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.FuturePositionList"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/trade/margin": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Get margin information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.Margin"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/trade/records": {
             "get": {
                 "security": [
@@ -578,6 +818,14 @@ const docTemplate = `{
                     "Trade V1"
                 ],
                 "summary": "Get all trade records",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -662,6 +910,106 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/pb.TradeList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/trade/sell/first/future": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Sell first future",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.BaseOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.Trade"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/trade/sell/future": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Trade V1"
+                ],
+                "summary": "Sell future",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.BaseOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.Trade"
                         }
                     },
                     "400": {
@@ -949,6 +1297,23 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.BaseOrder": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/pb.OrderAction"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
         "pb.BasicUser": {
             "type": "object",
             "properties": {
@@ -979,6 +1344,21 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "pb.FetchStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "FetchStatus_FETCH_STATUS_UNKNOWN",
+                "FetchStatus_FETCH_STATUS_FETCHED",
+                "FetchStatus_FETCH_STATUS_FETCHING",
+                "FetchStatus_FETCH_STATUS_UNFETCH"
+            ]
         },
         "pb.FutureDetail": {
             "type": "object",
@@ -1065,6 +1445,80 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.FuturePosition": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "direction": {
+                    "$ref": "#/definitions/pb.OrderAction"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_price": {
+                    "type": "number"
+                },
+                "pnl": {
+                    "type": "number"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.FuturePositionList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.FuturePosition"
+                    }
+                }
+            }
+        },
+        "pb.HistoryKbar": {
+            "type": "object",
+            "properties": {
+                "close": {
+                    "type": "number"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "high": {
+                    "type": "number"
+                },
+                "kbar_time": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                },
+                "low": {
+                    "type": "number"
+                },
+                "open": {
+                    "type": "number"
+                },
+                "volume": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.HistoryKbarList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.HistoryKbar"
+                    }
+                }
+            }
+        },
         "pb.LoginEvent": {
             "type": "object",
             "properties": {
@@ -1138,6 +1592,89 @@ const docTemplate = `{
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "pb.Margin": {
+            "type": "object",
+            "properties": {
+                "available_margin": {
+                    "type": "number"
+                },
+                "collateral_amount": {
+                    "type": "number"
+                },
+                "deposit_withdrawal": {
+                    "type": "number"
+                },
+                "equity": {
+                    "type": "number"
+                },
+                "equity_amount": {
+                    "type": "number"
+                },
+                "fee": {
+                    "type": "number"
+                },
+                "future_open_position": {
+                    "type": "number"
+                },
+                "future_settle_profitloss": {
+                    "type": "number"
+                },
+                "initial_margin": {
+                    "type": "number"
+                },
+                "maintenance_margin": {
+                    "type": "number"
+                },
+                "margin_call": {
+                    "type": "number"
+                },
+                "option_open_position": {
+                    "type": "number"
+                },
+                "option_openbuy_market_value": {
+                    "type": "number"
+                },
+                "option_opensell_market_value": {
+                    "type": "number"
+                },
+                "option_settle_profitloss": {
+                    "type": "number"
+                },
+                "order_margin_premium": {
+                    "type": "number"
+                },
+                "plus_margin": {
+                    "type": "number"
+                },
+                "plus_margin_indicator": {
+                    "type": "number"
+                },
+                "risk_indicator": {
+                    "type": "number"
+                },
+                "royalty_revenue_expenditure": {
+                    "type": "number"
+                },
+                "security_collateral_amount": {
+                    "type": "number"
+                },
+                "status": {
+                    "$ref": "#/definitions/pb.FetchStatus"
+                },
+                "tax": {
+                    "type": "number"
+                },
+                "today_balance": {
+                    "type": "number"
+                },
+                "today_future_open_position": {
+                    "type": "number"
+                },
+                "yesterday_balance": {
+                    "type": "number"
                 }
             }
         },
@@ -1542,6 +2079,26 @@ const docTemplate = `{
                 "UserRole_ADMIN",
                 "UserRole_ROOT"
             ]
+        },
+        "structpb.ListValue": {
+            "type": "object",
+            "properties": {
+                "values": {
+                    "description": "Repeated field of dynamically typed values.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/structpb.Value"
+                    }
+                }
+            }
+        },
+        "structpb.Value": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "description": "The kind of value.\n\nTypes that are valid to be assigned to Kind:\n\n\t*Value_NullValue\n\t*Value_NumberValue\n\t*Value_StringValue\n\t*Value_BoolValue\n\t*Value_StructValue\n\t*Value_ListValue"
+                }
+            }
         },
         "timestamppb.Timestamp": {
             "type": "object",

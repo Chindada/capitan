@@ -10,8 +10,10 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
+	usecases "github.com/chindada/capitan/internal/usecases"
 	pb "github.com/chindada/panther/golang/pb"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -40,6 +42,48 @@ func (m *MockTrade) EXPECT() *MockTradeMockRecorder {
 	return m.recorder
 }
 
+// BuyFuture mocks base method.
+func (m *MockTrade) BuyFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuyFuture", ctx, in)
+	ret0, _ := ret[0].(*pb.Trade)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BuyFuture indicates an expected call of BuyFuture.
+func (mr *MockTradeMockRecorder) BuyFuture(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuyFuture", reflect.TypeOf((*MockTrade)(nil).BuyFuture), ctx, in)
+}
+
+// CancelTrade mocks base method.
+func (m *MockTrade) CancelTrade(ctx context.Context, in *pb.Trade) (*pb.Trade, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CancelTrade", ctx, in)
+	ret0, _ := ret[0].(*pb.Trade)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CancelTrade indicates an expected call of CancelTrade.
+func (mr *MockTradeMockRecorder) CancelTrade(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelTrade", reflect.TypeOf((*MockTrade)(nil).CancelTrade), ctx, in)
+}
+
+// CloseSingleCodeClient mocks base method.
+func (m *MockTrade) CloseSingleCodeClient(clientID, code string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CloseSingleCodeClient", clientID, code)
+}
+
+// CloseSingleCodeClient indicates an expected call of CloseSingleCodeClient.
+func (mr *MockTradeMockRecorder) CloseSingleCodeClient(clientID, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSingleCodeClient", reflect.TypeOf((*MockTrade)(nil).CloseSingleCodeClient), clientID, code)
+}
+
 // CloseTradeClient mocks base method.
 func (m *MockTrade) CloseTradeClient(clientID string) {
 	m.ctrl.T.Helper()
@@ -52,16 +96,73 @@ func (mr *MockTradeMockRecorder) CloseTradeClient(clientID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseTradeClient", reflect.TypeOf((*MockTrade)(nil).CloseTradeClient), clientID)
 }
 
-// CreateTradeClient mocks base method.
-func (m *MockTrade) CreateTradeClient(clientID string, client chan *pb.Trade) {
+// CreateSingleCodeClient mocks base method.
+func (m *MockTrade) CreateSingleCodeClient(code string, client *usecases.TradeClient) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CreateTradeClient", clientID, client)
+	m.ctrl.Call(m, "CreateSingleCodeClient", code, client)
+}
+
+// CreateSingleCodeClient indicates an expected call of CreateSingleCodeClient.
+func (mr *MockTradeMockRecorder) CreateSingleCodeClient(code, client any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSingleCodeClient", reflect.TypeOf((*MockTrade)(nil).CreateSingleCodeClient), code, client)
+}
+
+// CreateTradeClient mocks base method.
+func (m *MockTrade) CreateTradeClient(client *usecases.TradeClient) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CreateTradeClient", client)
 }
 
 // CreateTradeClient indicates an expected call of CreateTradeClient.
-func (mr *MockTradeMockRecorder) CreateTradeClient(clientID, client any) *gomock.Call {
+func (mr *MockTradeMockRecorder) CreateTradeClient(client any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTradeClient", reflect.TypeOf((*MockTrade)(nil).CreateTradeClient), clientID, client)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTradeClient", reflect.TypeOf((*MockTrade)(nil).CreateTradeClient), client)
+}
+
+// GetFuturePosition mocks base method.
+func (m *MockTrade) GetFuturePosition(ctx context.Context) (*pb.FuturePositionList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFuturePosition", ctx)
+	ret0, _ := ret[0].(*pb.FuturePositionList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFuturePosition indicates an expected call of GetFuturePosition.
+func (mr *MockTradeMockRecorder) GetFuturePosition(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFuturePosition", reflect.TypeOf((*MockTrade)(nil).GetFuturePosition), ctx)
+}
+
+// GetFuturePositionByCode mocks base method.
+func (m *MockTrade) GetFuturePositionByCode(ctx context.Context, code string) (*pb.FuturePositionList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFuturePositionByCode", ctx, code)
+	ret0, _ := ret[0].(*pb.FuturePositionList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFuturePositionByCode indicates an expected call of GetFuturePositionByCode.
+func (mr *MockTradeMockRecorder) GetFuturePositionByCode(ctx, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFuturePositionByCode", reflect.TypeOf((*MockTrade)(nil).GetFuturePositionByCode), ctx, code)
+}
+
+// GetMargin mocks base method.
+func (m *MockTrade) GetMargin(ctx context.Context) (*pb.Margin, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMargin", ctx)
+	ret0, _ := ret[0].(*pb.Margin)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMargin indicates an expected call of GetMargin.
+func (mr *MockTradeMockRecorder) GetMargin(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMargin", reflect.TypeOf((*MockTrade)(nil).GetMargin), ctx)
 }
 
 // GetTradeByOrderID mocks base method.
@@ -92,6 +193,51 @@ func (m *MockTrade) GetTrades(req *pb.QueryTradeRequest) ([]*pb.Trade, error) {
 func (mr *MockTradeMockRecorder) GetTrades(req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrades", reflect.TypeOf((*MockTrade)(nil).GetTrades), req)
+}
+
+// GetUndoneTradesByCode mocks base method.
+func (m *MockTrade) GetUndoneTradesByCode(code string) ([]*pb.Trade, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUndoneTradesByCode", code)
+	ret0, _ := ret[0].([]*pb.Trade)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUndoneTradesByCode indicates an expected call of GetUndoneTradesByCode.
+func (mr *MockTradeMockRecorder) GetUndoneTradesByCode(code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUndoneTradesByCode", reflect.TypeOf((*MockTrade)(nil).GetUndoneTradesByCode), code)
+}
+
+// SellFirstFuture mocks base method.
+func (m *MockTrade) SellFirstFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SellFirstFuture", ctx, in)
+	ret0, _ := ret[0].(*pb.Trade)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SellFirstFuture indicates an expected call of SellFirstFuture.
+func (mr *MockTradeMockRecorder) SellFirstFuture(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SellFirstFuture", reflect.TypeOf((*MockTrade)(nil).SellFirstFuture), ctx, in)
+}
+
+// SellFuture mocks base method.
+func (m *MockTrade) SellFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SellFuture", ctx, in)
+	ret0, _ := ret[0].(*pb.Trade)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SellFuture indicates an expected call of SellFuture.
+func (mr *MockTradeMockRecorder) SellFuture(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SellFuture", reflect.TypeOf((*MockTrade)(nil).SellFuture), ctx, in)
 }
 
 // TriggerUpdateAndPublishTrade mocks base method.

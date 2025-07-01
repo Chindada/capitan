@@ -14,6 +14,8 @@ import (
 //go:generate mockgen -source=usecase_stream.go -destination=./mocks/mocks_usecase_stream_test.go -package=mocks
 
 type Stream interface {
+	GetAllSubscribeCodes() []string
+
 	CreateFutureClient(client *FutureClient)
 	CloseFutureClient(clientID string)
 
@@ -34,6 +36,9 @@ type streamUseCase struct {
 
 	clientTickChannel   chan *pb.FutureTick
 	clientBidAskChannel chan *pb.FutureBidAsk
+
+	subscribeCodeMap map[string]bool
+	subscribeLock    sync.RWMutex
 }
 
 func NewStream() Stream {
@@ -45,6 +50,7 @@ func NewStream() Stream {
 		futureClientMap:     make(map[string]*FutureClient),
 		clientTickChannel:   make(chan *pb.FutureTick),
 		clientBidAskChannel: make(chan *pb.FutureBidAsk),
+		subscribeCodeMap:    make(map[string]bool),
 	}
 
 	go uc.sendFutureTick()
@@ -126,6 +132,9 @@ func (uc *streamUseCase) subscribeFutureTick(code string) {
 		uc.logger.Errorf("Failed to subscribe to future tick for code %s: %v", code, err)
 		return
 	}
+	uc.subscribeLock.Lock()
+	uc.subscribeCodeMap[code] = true
+	uc.subscribeLock.Unlock()
 	for {
 		t, rErr := tickStream.Recv()
 		if rErr != nil {
@@ -212,4 +221,15 @@ func (uc *streamUseCase) CloseSingleFutureClient(clientID, code string) {
 	} else {
 		uc.singleFutureClientMap.Store(code, chs)
 	}
+}
+
+func (uc *streamUseCase) GetAllSubscribeCodes() []string {
+	uc.subscribeLock.RLock()
+	defer uc.subscribeLock.RUnlock()
+
+	codes := make([]string, 0, len(uc.subscribeCodeMap))
+	for code := range uc.subscribeCodeMap {
+		codes = append(codes, code)
+	}
+	return codes
 }

@@ -24,6 +24,17 @@ definitions:
           $ref: '#/definitions/pb.Backup'
         type: array
     type: object
+  pb.BaseOrder:
+    properties:
+      action:
+        $ref: '#/definitions/pb.OrderAction'
+      code:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+    type: object
   pb.BasicUser:
     properties:
       email:
@@ -44,6 +55,18 @@ definitions:
       username:
         type: string
     type: object
+  pb.FetchStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - FetchStatus_FETCH_STATUS_UNKNOWN
+    - FetchStatus_FETCH_STATUS_FETCHED
+    - FetchStatus_FETCH_STATUS_FETCHING
+    - FetchStatus_FETCH_STATUS_UNFETCH
   pb.FutureDetail:
     properties:
       category:
@@ -100,6 +123,54 @@ definitions:
           $ref: '#/definitions/pb.FutureDetail'
         type: array
     type: object
+  pb.FuturePosition:
+    properties:
+      code:
+        type: string
+      direction:
+        $ref: '#/definitions/pb.OrderAction'
+      id:
+        type: integer
+      last_price:
+        type: number
+      pnl:
+        type: number
+      price:
+        type: number
+      quantity:
+        type: integer
+    type: object
+  pb.FuturePositionList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.FuturePosition'
+        type: array
+    type: object
+  pb.HistoryKbar:
+    properties:
+      close:
+        type: number
+      code:
+        type: string
+      high:
+        type: number
+      kbar_time:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      low:
+        type: number
+      open:
+        type: number
+      volume:
+        type: integer
+    type: object
+  pb.HistoryKbarList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.HistoryKbar'
+        type: array
+    type: object
   pb.LoginEvent:
     properties:
       created_at:
@@ -151,6 +222,61 @@ definitions:
         type: string
       token:
         type: string
+    type: object
+  pb.Margin:
+    properties:
+      available_margin:
+        type: number
+      collateral_amount:
+        type: number
+      deposit_withdrawal:
+        type: number
+      equity:
+        type: number
+      equity_amount:
+        type: number
+      fee:
+        type: number
+      future_open_position:
+        type: number
+      future_settle_profitloss:
+        type: number
+      initial_margin:
+        type: number
+      maintenance_margin:
+        type: number
+      margin_call:
+        type: number
+      option_open_position:
+        type: number
+      option_openbuy_market_value:
+        type: number
+      option_opensell_market_value:
+        type: number
+      option_settle_profitloss:
+        type: number
+      order_margin_premium:
+        type: number
+      plus_margin:
+        type: number
+      plus_margin_indicator:
+        type: number
+      risk_indicator:
+        type: number
+      royalty_revenue_expenditure:
+        type: number
+      security_collateral_amount:
+        type: number
+      status:
+        $ref: '#/definitions/pb.FetchStatus'
+      tax:
+        type: number
+      today_balance:
+        type: number
+      today_future_open_position:
+        type: number
+      yesterday_balance:
+        type: number
     type: object
   pb.OptionDetail:
     properties:
@@ -427,6 +553,20 @@ definitions:
     - UserRole_USER
     - UserRole_ADMIN
     - UserRole_ROOT
+  structpb.ListValue:
+    properties:
+      values:
+        description: Repeated field of dynamically typed values.
+        items:
+          $ref: '#/definitions/structpb.Value'
+        type: array
+    type: object
+  structpb.Value:
+    properties:
+      kind:
+        description: "The kind of value.\n\nTypes that are valid to be assigned to
+          Kind:\n\n\t*Value_NullValue\n\t*Value_NumberValue\n\t*Value_StringValue\n\t*Value_BoolValue\n\t*Value_StructValue\n\t*Value_ListValue"
+    type: object
   timestamppb.Timestamp:
     properties:
       nanos:
@@ -449,6 +589,30 @@ info:
   title: Capitan V1 OpenAPI
   version: v0.0
 paths:
+  /api/capitan/v1/basic/future/kbar:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.HistoryKbarList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get futures
+      tags:
+      - Basic V1
   /api/capitan/v1/basic/futures:
     get:
       consumes:
@@ -616,6 +780,22 @@ paths:
       summary: Refresh token
       tags:
       - User V1
+  /api/capitan/v1/stream/subscribe/codes:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structpb.ListValue'
+      security:
+      - JWT: []
+      summary: Get all trade records
+      tags:
+      - Stream V1
   /api/capitan/v1/system/backup:
     delete:
       consumes:
@@ -786,10 +966,122 @@ paths:
       summary: Get system info
       tags:
       - System V1
+  /api/capitan/v1/trade/buy/future:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.BaseOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.Trade'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Buy future
+      tags:
+      - Trade V1
+  /api/capitan/v1/trade/cancel:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.BaseOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.Trade'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Cancel trade
+      tags:
+      - Trade V1
+  /api/capitan/v1/trade/future/position:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: code
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.FuturePositionList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get all future positions
+      tags:
+      - Trade V1
+  /api/capitan/v1/trade/margin:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.Margin'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get margin information
+      tags:
+      - Trade V1
   /api/capitan/v1/trade/records:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: code
+        in: query
+        name: code
+        type: string
       produces:
       - application/json
       responses:
@@ -857,6 +1149,68 @@ paths:
       security:
       - JWT: []
       summary: Get trade records by request
+      tags:
+      - Trade V1
+  /api/capitan/v1/trade/sell/first/future:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.BaseOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.Trade'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Sell first future
+      tags:
+      - Trade V1
+  /api/capitan/v1/trade/sell/future:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.BaseOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.Trade'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Sell future
       tags:
       - Trade V1
   /api/capitan/v1/user:

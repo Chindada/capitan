@@ -29,13 +29,23 @@ func NewTradeRoutes(handler *gin.RouterGroup, ws *gin.RouterGroup, t usecases.Tr
 	base := "/trade"
 	h := handler.Group(base)
 	{
+		h.POST("/cancel", r.cancelTrade)
+
+		h.POST("/buy/future", r.buyFuture)
+		h.POST("/sell/future", r.sellFuture)
+		h.POST("/sell/first/future", r.sellFirstFuture)
+
 		h.GET("/records", r.getAllRecords)
 		h.POST("/records", r.getRecords)
 		h.PUT("/records", r.triggerUpdateRecords)
+
+		h.GET("/margin", r.getMargin)
+		h.GET("/future/position", r.getFuturePosition)
 	}
 	w := ws.Group(base)
 	{
 		w.GET("/trigger", r.streamTrade)
+		w.GET("/single/trigger", r.streamSingleCodeTrade)
 	}
 }
 
@@ -46,15 +56,27 @@ func NewTradeRoutes(handler *gin.RouterGroup, ws *gin.RouterGroup, t usecases.Tr
 //	@security	JWT
 //	@Accept		application/json
 //	@Produce	application/json
-//	@Success	200	{object}	pb.TradeList
-//	@Failure	400	{object}	pb.APIResponse
-//	@Failure	500	{object}	pb.APIResponse
+//	@Param		code	query		string	false	"code"
+//	@Success	200		{object}	pb.TradeList
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/trade/records [get]
 func (r *tradeRoutes) getAllRecords(c *gin.Context) {
-	trades, err := r.t.GetTrades(&pb.QueryTradeRequest{})
-	if err != nil {
-		resp.Fail(c, http.StatusInternalServerError, err)
-		return
+	code := c.Query("code")
+	var trades []*pb.Trade
+	var err error
+	if code == "" {
+		trades, err = r.t.GetTrades(&pb.QueryTradeRequest{})
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
+	} else {
+		trades, err = r.t.GetUndoneTradesByCode(code)
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
 	}
 	resp.Success(c, http.StatusOK, &pb.TradeList{List: trades})
 }
@@ -123,7 +145,43 @@ func (r *tradeRoutes) streamTrade(c *gin.Context) {
 			r.t.CloseTradeClient(clientID)
 		}()
 		for {
-			r.t.CreateTradeClient(clientID, r.sendTrade(ws))
+			r.t.CreateTradeClient(&usecases.TradeClient{
+				ID:      clientID,
+				Channel: r.sendTrade(ws),
+			})
+			_, ok := <-forwardChan
+			if !ok {
+				break
+			}
+		}
+	}()
+	ws.ReadMessage()
+}
+
+// streamSingleCodeTrade /ws/capitan/v1/trade/single/trigger [get].
+func (r *tradeRoutes) streamSingleCodeTrade(c *gin.Context) {
+	code := c.Query("code")
+	if code == "" {
+		resp.Fail(c, http.StatusBadRequest, resp.ErrNotFound)
+		return
+	}
+
+	forwardChan := make(chan []byte)
+	ws, err := ws.New(c, forwardChan)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	clientID := uuid.NewString()
+	go func() {
+		defer func() {
+			r.t.CloseSingleCodeClient(clientID, code)
+		}()
+		for {
+			r.t.CreateSingleCodeClient(code, &usecases.TradeClient{
+				ID:      clientID,
+				Channel: r.sendTrade(ws),
+			})
 			_, ok := <-forwardChan
 			if !ok {
 				break
@@ -163,4 +221,162 @@ func (r *tradeRoutes) sendTrade(ws ws.WS) chan *pb.Trade {
 		}
 	}()
 	return channel
+}
+
+// cancelTrade -.
+//
+//	@Tags		Trade V1
+//	@Summary	Cancel trade
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		pb.BaseOrder	true	"Body"
+//	@Success	200		{object}	pb.Trade
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/trade/cancel [post]
+func (r *tradeRoutes) cancelTrade(c *gin.Context) {
+	req := &pb.Trade{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+	result, err := r.t.CancelTrade(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, result)
+}
+
+// buyFuture -.
+//
+//	@Tags		Trade V1
+//	@Summary	Buy future
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		pb.BaseOrder	true	"Body"
+//	@Success	200		{object}	pb.Trade
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/trade/buy/future [post]
+func (r *tradeRoutes) buyFuture(c *gin.Context) {
+	req := &pb.BaseOrder{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+	result, err := r.t.BuyFuture(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, result)
+}
+
+// sellFuture -.
+//
+//	@Tags		Trade V1
+//	@Summary	Sell future
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		pb.BaseOrder	true	"Body"
+//	@Success	200		{object}	pb.Trade
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/trade/sell/future [post]
+func (r *tradeRoutes) sellFuture(c *gin.Context) {
+	req := &pb.BaseOrder{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+	result, err := r.t.SellFuture(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, result)
+}
+
+// sellFirstFuture -.
+//
+//	@Tags		Trade V1
+//	@Summary	Sell first future
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		pb.BaseOrder	true	"Body"
+//	@Success	200		{object}	pb.Trade
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/trade/sell/first/future [post]
+func (r *tradeRoutes) sellFirstFuture(c *gin.Context) {
+	req := &pb.BaseOrder{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+	result, err := r.t.SellFirstFuture(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, result)
+}
+
+// getMargin -.
+//
+//	@Tags		Trade V1
+//	@Summary	Get margin information
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.Margin
+//	@Failure	500	{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/trade/margin [get]
+func (r *tradeRoutes) getMargin(c *gin.Context) {
+	margin, err := r.t.GetMargin(c)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, margin)
+}
+
+// getAllFuturePosition -.
+//
+//	@Tags		Trade V1
+//	@Summary	Get all future positions
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Param		code	query		string	false	"code"
+//	@Success	200		{object}	pb.FuturePositionList
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/trade/future/position [get]
+func (r *tradeRoutes) getFuturePosition(c *gin.Context) {
+	code := c.Query("code")
+	var positionList *pb.FuturePositionList
+	var err error
+	if code == "" {
+		positionList, err = r.t.GetFuturePosition(c)
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
+	} else {
+		positionList, err = r.t.GetFuturePositionByCode(c, code)
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
+	}
+	resp.Success(c, http.StatusOK, positionList)
 }

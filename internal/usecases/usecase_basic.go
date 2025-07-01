@@ -25,6 +25,8 @@ type Basic interface {
 	GetAllStockDetail(ctx context.Context) ([]*pb.StockDetail, error)
 	GetAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error)
 	GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error)
+
+	GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error)
 }
 
 type basicUseCase struct {
@@ -174,4 +176,8 @@ func (uc *basicUseCase) GetAllFutureDetail(ctx context.Context) ([]*pb.FutureDet
 
 func (uc *basicUseCase) GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error) {
 	return uc.basicRepo.SelectAllOptionDetail(ctx)
+}
+
+func (uc *basicUseCase) GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error) {
+	return uc.basicClient.GetFutureHistoryKbar(ctx, req)
 }

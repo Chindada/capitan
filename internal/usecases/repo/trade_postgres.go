@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/chindada/panther/golang/pb"
 	"github.com/chindada/panther/pkg/client"
 	"github.com/google/uuid"
@@ -14,6 +15,7 @@ import (
 type TradeRepo interface {
 	InsertOrUpdateTrade(ctx context.Context, t *pb.Trade) error
 	SelectTradesByRequest(ctx context.Context, req *pb.QueryTradeRequest) ([]*pb.Trade, error)
+	SelectUndoneTradesByCode(ctx context.Context, code string) ([]*pb.Trade, error)
 }
 
 type trade struct {
@@ -229,6 +231,79 @@ func (r *trade) SelectTradesByRequest(ctx context.Context, req *pb.QueryTradeReq
 	if req.GetStartTime().IsValid() && req.GetEndTime().IsValid() {
 		builder = builder.Where("trade_record.order_time >= ? AND trade_record.order_time <= ?", req.GetStartTime().AsTime().Local(), req.GetEndTime().AsTime().Local())
 	}
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Pool().Query(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var trades []*pb.Trade
+	stock := scanStock{}
+	future := scanFuture{}
+	option := scanOption{}
+	var orderTime pgtype.Timestamptz
+	for rows.Next() {
+		t := &pb.Trade{}
+		if err = rows.Scan(
+			&t.Uid, &t.Type, &t.OrderId, &t.Action,
+			&t.Price, &t.Quantity, &t.FilledQuantity,
+			&t.Status, &orderTime,
+			&stock.code, &stock.name, &stock.exchange, &stock.category, &stock.reference, &stock.updateDate,
+			&future.code, &future.symbol, &future.name, &future.category, &future.deliveryMonth,
+			&future.deliveryDate, &future.underlyingKind, &future.unit, &future.limitUp, &future.limitDown, &future.reference, &future.updateDate,
+			&option.code, &option.symbol, &option.name, &option.category, &option.deliveryMonth,
+			&option.deliveryDate, &option.strikePrice, &option.optionRight, &option.underlyingKind,
+			&option.unit, &option.limitUp, &option.limitDown, &option.reference, &option.updateDate,
+		); err != nil {
+			return nil, err
+		}
+		trades = append(trades, t)
+		t.OrderTime = timestamppb.New(orderTime.Time.Local())
+		t.Stock = stock.ToPB()
+		t.Future = future.ToPB()
+		t.Option = option.ToPB()
+		switch {
+		case stock.code.Valid:
+			t.Code = stock.code.String
+		case future.code.Valid:
+			t.Code = future.code.String
+		case option.code.Valid:
+			t.Code = option.code.String
+		}
+	}
+	return trades, nil
+}
+
+func (r *trade) SelectUndoneTradesByCode(ctx context.Context, code string) ([]*pb.Trade, error) {
+	builder := r.Builder().
+		Select(
+			"trade_record.uid", "trade_record.type", "trade_record.order_id", "trade_record.action",
+			"trade_record.price", "trade_record.quantity", "trade_record.filled_quantity",
+			"trade_record.status", "trade_record.order_time",
+			"trade_record.stock_code", "basic_stock.name", "basic_stock.exchange", "basic_stock.category", "basic_stock.last_close", "basic_stock.update_date",
+			"trade_record.future_code", "basic_future.symbol", "basic_future.name", "basic_future.category", "basic_future.delivery_month",
+			"basic_future.delivery_date", "basic_future.underlying_kind", "basic_future.unit", "basic_future.limit_up", "basic_future.limit_down", "basic_future.reference", "basic_future.update_date",
+			"trade_record.option_code", "basic_option.symbol", "basic_option.name", "basic_option.category", "basic_option.delivery_month",
+			"basic_option.delivery_date", "basic_option.strike_price", "basic_option.option_right", "basic_option.underlying_kind",
+			"basic_option.unit", "basic_option.limit_up", "basic_option.limit_down", "basic_option.reference", "basic_option.update_date",
+		).
+		From(tableNameTradeRecord).
+		Where(squirrel.Or{
+			squirrel.Eq{"trade_record.stock_code": code},
+			squirrel.Eq{"trade_record.future_code": code},
+			squirrel.Eq{"trade_record.option_code": code},
+		}).
+		Where(squirrel.GtOrEq{"trade_record.status": 6}).
+		LeftJoin("basic_stock ON trade_record.stock_code = basic_stock.code").
+		LeftJoin("basic_future ON trade_record.future_code = basic_future.code").
+		LeftJoin("basic_option ON trade_record.option_code = basic_option.code").
+		OrderBy("trade_record.order_time DESC")
+
 	sql, args, err := builder.ToSql()
 	if err != nil {
 		return nil, err

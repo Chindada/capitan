@@ -21,6 +21,8 @@ func NewBasicRoutes(handler *gin.RouterGroup, t usecases.Basic) {
 		h.GET("/stocks", r.getStocks)
 		h.GET("/futures", r.getFutures)
 		h.GET("/options", r.getOptions)
+
+		h.POST("/future/kbar", r.getFutureKbar)
 	}
 }
 
@@ -88,4 +90,31 @@ func (r *basicRoutes) getOptions(c *gin.Context) {
 	resp.Success(c, http.StatusOK, &pb.OptionDetailList{
 		List: data,
 	})
+}
+
+// getFutureKbar -.
+//
+//	@Tags		Basic V1
+//	@Summary	Get futures
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.HistoryKbarList
+//	@Failure	400	{object}	pb.APIResponse
+//	@Failure	500	{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/future/kbar [post]
+func (r *basicRoutes) getFutureKbar(c *gin.Context) {
+	req := &pb.HistoryKbarRequest{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+
+	data, err := r.t.GetFutureKbar(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, data)
 }
