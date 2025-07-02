@@ -33,7 +33,6 @@ type Trade interface {
 
 	BuyFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error)
 	SellFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error)
-	SellFirstFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error)
 
 	GetFuturePositionByCode(ctx context.Context, code string) (*pb.FuturePositionList, error)
 	GetFuturePosition(ctx context.Context) (*pb.FuturePositionList, error)
@@ -238,10 +237,6 @@ func (uc *tradeUseCase) BuyFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Tr
 
 func (uc *tradeUseCase) SellFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
 	return uc.tradeClient.SellFuture(ctx, in)
-}
-
-func (uc *tradeUseCase) SellFirstFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
-	return uc.tradeClient.SellFirstFuture(ctx, in)
 }
 
 func (uc *tradeUseCase) CancelTrade(ctx context.Context, in *pb.Trade) (*pb.Trade, error) {

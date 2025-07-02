@@ -210,21 +210,6 @@ func (mr *MockTradeMockRecorder) GetUndoneTradesByCode(code any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUndoneTradesByCode", reflect.TypeOf((*MockTrade)(nil).GetUndoneTradesByCode), code)
 }
 
-// SellFirstFuture mocks base method.
-func (m *MockTrade) SellFirstFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SellFirstFuture", ctx, in)
-	ret0, _ := ret[0].(*pb.Trade)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SellFirstFuture indicates an expected call of SellFirstFuture.
-func (mr *MockTradeMockRecorder) SellFirstFuture(ctx, in any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SellFirstFuture", reflect.TypeOf((*MockTrade)(nil).SellFirstFuture), ctx, in)
-}
-
 // SellFuture mocks base method.
 func (m *MockTrade) SellFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
 	m.ctrl.T.Helper()

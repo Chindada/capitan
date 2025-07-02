@@ -37,7 +37,6 @@ func NewTradeRoutes(handler *gin.RouterGroup, ws *gin.RouterGroup, t usecases.Tr
 
 		h.POST("/buy/future", r.buyFuture)
 		h.POST("/sell/future", r.sellFuture)
-		h.POST("/sell/first/future", r.sellFirstFuture)
 
 		h.GET("/margin", r.getMargin)
 		h.GET("/future/position", r.getFuturePosition)
@@ -296,33 +295,6 @@ func (r *tradeRoutes) sellFuture(c *gin.Context) {
 		return
 	}
 	result, err := r.t.SellFuture(c, req)
-	if err != nil {
-		resp.Fail(c, http.StatusInternalServerError, err)
-		return
-	}
-	resp.Success(c, http.StatusOK, result)
-}
-
-// sellFirstFuture -.
-//
-//	@Tags		Trade V1
-//	@Summary	Sell first future
-//	@security	JWT
-//	@Accept		application/json
-//	@Produce	application/json
-//	@param		body	body		pb.BaseOrder	true	"Body"
-//	@Success	200		{object}	pb.Trade
-//	@Failure	400		{object}	pb.APIResponse
-//	@Failure	500		{object}	pb.APIResponse
-//	@Router		/api/capitan/v1/trade/sell/first/future [post]
-func (r *tradeRoutes) sellFirstFuture(c *gin.Context) {
-	req := &pb.BaseOrder{}
-	err := c.Bind(req)
-	if err != nil {
-		resp.Fail(c, http.StatusBadRequest, err)
-		return
-	}
-	result, err := r.t.SellFirstFuture(c, req)
 	if err != nil {
 		resp.Fail(c, http.StatusInternalServerError, err)
 		return
