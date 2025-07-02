@@ -16,26 +16,24 @@ type userRoutes struct {
 	jwtHandler *jwt.GinJWTMiddleware
 }
 
-func NewUserRoutes(
-	public *gin.RouterGroup,
-	private *gin.RouterGroup,
-	jwtHandler *jwt.GinJWTMiddleware,
-	system usecases.System,
-) {
+func NewUserRoutes(public *gin.RouterGroup, private *gin.RouterGroup, jwtHandler *jwt.GinJWTMiddleware, system usecases.System) {
 	r := &userRoutes{
 		system:     system,
 		jwtHandler: jwtHandler,
 	}
-	public.POST("/login", r.loginHandler)
-	public.GET("/logout", r.logutHandler)
+	{
+		public.POST("/login", r.loginHandler)
+		public.GET("/logout", r.logutHandler)
+	}
+	{
+		private.GET("/refresh", r.refreshTokenHandler)
 
-	private.GET("/refresh", r.refreshTokenHandler)
-	private.GET("/user/list", r.getAllUser)
-	private.POST("/user/password", r.updateUserPasswordHandler)
-
-	private.POST("/user", r.newUserHandler)
-	private.PUT("/user", r.updateUserHandler)
-	private.DELETE("/user", r.deleteUserByUsername)
+		private.GET("/user/list", r.getAllUser)
+		private.POST("/user", r.newUserHandler)
+		private.POST("/user/password", r.updateUserPasswordHandler)
+		private.PUT("/user", r.updateUserHandler)
+		private.DELETE("/user", r.deleteUserByUsername)
+	}
 }
 
 // loginHandler _.

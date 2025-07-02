@@ -34,7 +34,6 @@ func NewBasicRoutes(handler *gin.RouterGroup, t usecases.Basic) {
 //	@Accept		application/json
 //	@Produce	application/json
 //	@Success	200	{object}	pb.StockDetailList
-//	@Failure	400	{object}	pb.APIResponse
 //	@Failure	500	{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/basic/stocks [get]
 func (r *basicRoutes) getStocks(c *gin.Context) {
@@ -56,7 +55,6 @@ func (r *basicRoutes) getStocks(c *gin.Context) {
 //	@Accept		application/json
 //	@Produce	application/json
 //	@Success	200	{object}	pb.FutureDetailList
-//	@Failure	400	{object}	pb.APIResponse
 //	@Failure	500	{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/basic/futures [get]
 func (r *basicRoutes) getFutures(c *gin.Context) {
@@ -78,7 +76,6 @@ func (r *basicRoutes) getFutures(c *gin.Context) {
 //	@Accept		application/json
 //	@Produce	application/json
 //	@Success	200	{object}	pb.OptionDetailList
-//	@Failure	400	{object}	pb.APIResponse
 //	@Failure	500	{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/basic/options [get]
 func (r *basicRoutes) getOptions(c *gin.Context) {

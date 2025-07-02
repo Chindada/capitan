@@ -29,15 +29,15 @@ func NewTradeRoutes(handler *gin.RouterGroup, ws *gin.RouterGroup, t usecases.Tr
 	base := "/trade"
 	h := handler.Group(base)
 	{
+		h.GET("/records", r.getAllRecords)
+		h.POST("/records", r.getRecords)
+		h.PUT("/records", r.triggerUpdateRecords)
+
 		h.POST("/cancel", r.cancelTrade)
 
 		h.POST("/buy/future", r.buyFuture)
 		h.POST("/sell/future", r.sellFuture)
 		h.POST("/sell/first/future", r.sellFirstFuture)
-
-		h.GET("/records", r.getAllRecords)
-		h.POST("/records", r.getRecords)
-		h.PUT("/records", r.triggerUpdateRecords)
 
 		h.GET("/margin", r.getMargin)
 		h.GET("/future/position", r.getFuturePosition)
@@ -58,7 +58,6 @@ func NewTradeRoutes(handler *gin.RouterGroup, ws *gin.RouterGroup, t usecases.Tr
 //	@Produce	application/json
 //	@Param		code	query		string	false	"code"
 //	@Success	200		{object}	pb.TradeList
-//	@Failure	400		{object}	pb.APIResponse
 //	@Failure	500		{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/trade/records [get]
 func (r *tradeRoutes) getAllRecords(c *gin.Context) {

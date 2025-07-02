@@ -47,6 +47,7 @@ func NewStreamRoutes(handler *gin.RouterGroup, ws *gin.RouterGroup, t usecases.S
 //	@Accept		application/json
 //	@Produce	application/json
 //	@Success	200	{object}	structpb.ListValue
+//	@Failure	500	{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/stream/subscribe/codes [get]
 func (r *streamRoutes) getAllSubscribeCodes(c *gin.Context) {
 	codes := r.t.GetAllSubscribeCodes()
