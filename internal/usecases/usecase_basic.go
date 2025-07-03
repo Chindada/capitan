@@ -70,6 +70,7 @@ func NewBasic() Basic {
 			uc.logger.Fatalf("Failed to update data: %v", err)
 		}
 	}
+	uc.bus.PublishTopicEvent(topicBasicDataUpdated)
 	return uc
 }
 

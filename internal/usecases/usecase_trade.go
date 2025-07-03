@@ -65,13 +65,15 @@ func NewTrade() Trade {
 		tradeClientMap: make(map[string]*TradeClient),
 		tradeChannel:   make(chan *pb.Trade),
 	}
-
-	go uc.sendTrade()
-	go uc.subscribeTrade()
-
+	uc.bus.SubscribeAsync(topicBasicDataUpdated, false, uc.streamTrade)
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureTick, false, uc.subscribeFutureTick)
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureBidAsk, false, uc.subscribeFutureBidAsk)
 	return uc
+}
+
+func (uc *tradeUseCase) streamTrade() {
+	go uc.sendTrade()
+	go uc.subscribeTrade()
 }
 
 func (uc *tradeUseCase) GetTrades(req *pb.QueryTradeRequest) ([]*pb.Trade, error) {
@@ -151,7 +153,7 @@ func (uc *tradeUseCase) subscribeTrade() {
 		go func() {
 			err = uc.tradeRepo.InsertOrUpdateTrade(context.Background(), t)
 			if err != nil {
-				uc.logger.Errorf("Failed to insert trade: %v", err)
+				uc.logger.Errorf("Failed to insert trade: %v(%+v)", err, t)
 			}
 		}()
 	}
