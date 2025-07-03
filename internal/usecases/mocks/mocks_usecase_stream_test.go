@@ -87,17 +87,3 @@ func (mr *MockStreamMockRecorder) CreateSingleFutureClient(code, client any) *go
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSingleFutureClient", reflect.TypeOf((*MockStream)(nil).CreateSingleFutureClient), code, client)
 }
-
-// GetAllSubscribeCodes mocks base method.
-func (m *MockStream) GetAllSubscribeCodes() []string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllSubscribeCodes")
-	ret0, _ := ret[0].([]string)
-	return ret0
-}
-
-// GetAllSubscribeCodes indicates an expected call of GetAllSubscribeCodes.
-func (mr *MockStreamMockRecorder) GetAllSubscribeCodes() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSubscribeCodes", reflect.TypeOf((*MockStream)(nil).GetAllSubscribeCodes))
-}

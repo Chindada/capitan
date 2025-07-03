@@ -17,12 +17,15 @@ import (
 
 type BasicRepo interface {
 	InsertStockDetail(ctx context.Context, t []*pb.StockDetail) error
+	SelectStockDetailByCode(ctx context.Context, code string) (*pb.StockDetail, error)
 	SelectAllStockDetail(ctx context.Context) ([]*pb.StockDetail, error)
 
 	InsertFutureDetail(ctx context.Context, t []*pb.FutureDetail) error
+	SelectFutureDetailByCode(ctx context.Context, code string) (*pb.FutureDetail, error)
 	SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error)
 
 	InsertOptionDetail(ctx context.Context, t []*pb.OptionDetail) error
+	SelectOptionDetailByCode(ctx context.Context, code string) (*pb.OptionDetail, error)
 	SelectAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error)
 
 	SearchFutureDetail(ctx context.Context, code string) ([]*pb.FutureDetail, error)
@@ -92,6 +95,49 @@ func (r *basic) InsertStockDetail(ctx context.Context, t []*pb.StockDetail) erro
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+func (r *basic) SelectStockDetailByCode(ctx context.Context, code string) (*pb.StockDetail, error) {
+	builder := r.Builder().
+		Select(
+			"code", "name", "exchange", "category", "day_trade", "last_close", "update_date",
+		).
+		From(tableNameBasicStock).
+		Where(squirrel.Eq{"code": code})
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Rollback(ctx, tx)
+
+	row := tx.QueryRow(ctx, sql, args...)
+	var item pb.StockDetail
+	var updateDate time.Time
+	var dayTrade bool
+	if err = row.Scan(
+		&item.Code,
+		&item.Name,
+		&item.Exchange,
+		&item.Category,
+		&dayTrade,
+		&item.Reference,
+		&updateDate,
+	); err != nil {
+		return nil, err
+	}
+	item.UpdateDate = updateDate.Format(entity.ShortSlashTimeLayout)
+	if dayTrade {
+		item.DayTrade = entity.DayTradeYes
+	} else {
+		item.DayTrade = entity.DayTradeNo
+	}
+	return &item, tx.Commit(ctx)
 }
 
 func (r *basic) SelectAllStockDetail(ctx context.Context) ([]*pb.StockDetail, error) {
@@ -222,6 +268,50 @@ func (r *basic) InsertFutureDetail(ctx context.Context, t []*pb.FutureDetail) er
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+func (r *basic) SelectFutureDetailByCode(ctx context.Context, code string) (*pb.FutureDetail, error) {
+	builder := r.Builder().
+		Select(
+			"code", "symbol", "name", "category", "delivery_month", "delivery_date",
+			"underlying_kind", "unit", "limit_up", "limit_down", "reference", "update_date",
+		).
+		From(tableNameBasicFuture).
+		Where(squirrel.Eq{"code": code})
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Rollback(ctx, tx)
+
+	row := tx.QueryRow(ctx, sql, args...)
+	var item pb.FutureDetail
+	var dDate, updateData time.Time
+	if err = row.Scan(
+		&item.Code,
+		&item.Symbol,
+		&item.Name,
+		&item.Category,
+		&item.DeliveryMonth,
+		&dDate,
+		&item.UnderlyingKind,
+		&item.Unit,
+		&item.LimitUp,
+		&item.LimitDown,
+		&item.Reference,
+		&updateData,
+	); err != nil {
+		return nil, err
+	}
+	item.DeliveryDate = dDate.Format(entity.ShortSlashTimeLayout)
+	item.UpdateDate = updateData.Format(entity.ShortSlashTimeLayout)
+	return &item, tx.Commit(ctx)
 }
 
 func (r *basic) SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error) {
@@ -419,6 +509,53 @@ func (r *basic) InsertOptionDetail(ctx context.Context, t []*pb.OptionDetail) er
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+func (r *basic) SelectOptionDetailByCode(ctx context.Context, code string) (*pb.OptionDetail, error) {
+	builder := r.Builder().
+		Select(
+			"code", "symbol", "name", "category", "delivery_month", "delivery_date",
+			"strike_price", "option_right",
+			"underlying_kind", "unit", "limit_up", "limit_down", "reference", "update_date",
+		).
+		From(tableNameBasicOption).
+		Where(squirrel.Eq{"code": code})
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Rollback(ctx, tx)
+
+	row := tx.QueryRow(ctx, sql, args...)
+	var item pb.OptionDetail
+	var dDate, updateData time.Time
+	if err = row.Scan(
+		&item.Code,
+		&item.Symbol,
+		&item.Name,
+		&item.Category,
+		&item.DeliveryMonth,
+		&dDate,
+		&item.StrikePrice,
+		&item.OptionRight,
+		&item.UnderlyingKind,
+		&item.Unit,
+		&item.LimitUp,
+		&item.LimitDown,
+		&item.Reference,
+		&updateData,
+	); err != nil {
+		return nil, err
+	}
+	item.DeliveryDate = dDate.Format(entity.ShortSlashTimeLayout)
+	item.UpdateDate = updateData.Format(entity.ShortSlashTimeLayout)
+	return &item, tx.Commit(ctx)
 }
 
 func (r *basic) SelectAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error) {

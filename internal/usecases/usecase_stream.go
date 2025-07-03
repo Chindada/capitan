@@ -14,8 +14,6 @@ import (
 //go:generate mockgen -source=usecase_stream.go -destination=./mocks/mocks_usecase_stream_test.go -package=mocks
 
 type Stream interface {
-	GetAllSubscribeCodes() []string
-
 	CreateFutureClient(client *FutureClient)
 	CloseFutureClient(clientID string)
 
@@ -33,32 +31,18 @@ type streamUseCase struct {
 
 	futureClientMap  map[string]*FutureClient
 	futureClientLock sync.RWMutex
-
-	clientTickChannel   chan *pb.FutureTick
-	clientBidAskChannel chan *pb.FutureBidAsk
-
-	subscribeCodeMap map[string]bool
-	subscribeLock    sync.RWMutex
 }
 
 func NewStream() Stream {
 	cfg := config.Get()
 	uc := &streamUseCase{
-		logger:              log.Get(),
-		bus:                 eventbus.Get(),
-		streamClient:        pb.NewStreamInterfaceClient(cfg.GetGRPCConn()),
-		futureClientMap:     make(map[string]*FutureClient),
-		clientTickChannel:   make(chan *pb.FutureTick),
-		clientBidAskChannel: make(chan *pb.FutureBidAsk),
-		subscribeCodeMap:    make(map[string]bool),
+		logger:          log.Get(),
+		bus:             eventbus.Get(),
+		streamClient:    pb.NewStreamInterfaceClient(cfg.GetGRPCConn()),
+		futureClientMap: make(map[string]*FutureClient),
 	}
-
-	go uc.sendFutureTick()
-	go uc.sendFutureBidAsk()
-
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureTick, false, uc.subscribeFutureTick)
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureBidAsk, false, uc.subscribeFutureBidAsk)
-
 	return uc
 }
 
@@ -80,17 +64,21 @@ func (uc *streamUseCase) sendSingleFutureTick() chan *pb.FutureTick {
 	return ch
 }
 
-func (uc *streamUseCase) sendFutureTick() {
-	singleChannel := uc.sendSingleFutureTick()
-	for {
-		tick := <-uc.clientTickChannel
-		singleChannel <- tick
-		uc.futureClientLock.RLock()
-		for _, client := range uc.futureClientMap {
-			client.TickChannel <- tick
+func (uc *streamUseCase) sendFutureTick() chan *pb.FutureTick {
+	channel := make(chan *pb.FutureTick)
+	go func() {
+		singleChannel := uc.sendSingleFutureTick()
+		for {
+			tick := <-channel
+			singleChannel <- tick
+			uc.futureClientLock.RLock()
+			for _, client := range uc.futureClientMap {
+				client.TickChannel <- tick
+			}
+			uc.futureClientLock.RUnlock()
 		}
-		uc.futureClientLock.RUnlock()
-	}
+	}()
+	return channel
 }
 
 func (uc *streamUseCase) sendSingleFutureBidAsk() chan *pb.FutureBidAsk {
@@ -111,55 +99,58 @@ func (uc *streamUseCase) sendSingleFutureBidAsk() chan *pb.FutureBidAsk {
 	return ch
 }
 
-func (uc *streamUseCase) sendFutureBidAsk() {
-	singleChannel := uc.sendSingleFutureBidAsk()
-	for {
-		bidAsk := <-uc.clientBidAskChannel
-		singleChannel <- bidAsk
-		uc.futureClientLock.RLock()
-		for _, client := range uc.futureClientMap {
-			client.BidAskChannel <- bidAsk
+func (uc *streamUseCase) sendFutureBidAsk() chan *pb.FutureBidAsk {
+	channel := make(chan *pb.FutureBidAsk)
+	go func() {
+		singleChannel := uc.sendSingleFutureBidAsk()
+		for {
+			bidAsk := <-channel
+			singleChannel <- bidAsk
+			uc.futureClientLock.RLock()
+			for _, client := range uc.futureClientMap {
+				client.BidAskChannel <- bidAsk
+			}
+			uc.futureClientLock.RUnlock()
 		}
-		uc.futureClientLock.RUnlock()
-	}
+	}()
+	return channel
 }
 
-func (uc *streamUseCase) subscribeFutureTick(code string) {
+func (uc *streamUseCase) subscribeFutureTick(detail *pb.FutureDetail) {
 	tickStream, err := uc.streamClient.SubscribeFutureTick(context.Background(), &pb.SubscribeFutureRequest{
-		Code: code,
+		Code: detail.GetCode(),
 	})
 	if err != nil {
-		uc.logger.Errorf("Failed to subscribe to future tick for code %s: %v", code, err)
+		uc.logger.Errorf("Failed to subscribe to future tick for code %s: %v", detail.GetCode(), err)
 		return
 	}
-	uc.subscribeLock.Lock()
-	uc.subscribeCodeMap[code] = true
-	uc.subscribeLock.Unlock()
+	ch := uc.sendFutureTick()
 	for {
 		t, rErr := tickStream.Recv()
 		if rErr != nil {
 			return
 		}
-		uc.bus.PublishTopicEvent(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureTick, code), t)
-		uc.clientTickChannel <- t
+		uc.bus.PublishTopicEvent(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureTick, detail.GetCode()), t)
+		ch <- t
 	}
 }
 
-func (uc *streamUseCase) subscribeFutureBidAsk(code string) {
+func (uc *streamUseCase) subscribeFutureBidAsk(detail *pb.FutureDetail) {
 	bidAskStream, err := uc.streamClient.SubscribeFutureBidAsk(context.Background(), &pb.SubscribeFutureRequest{
-		Code: code,
+		Code: detail.GetCode(),
 	})
 	if err != nil {
-		uc.logger.Errorf("Failed to subscribe to future bid-ask for code %s: %v", code, err)
+		uc.logger.Errorf("Failed to subscribe to future bid-ask for code %s: %v", detail.GetCode(), err)
 		return
 	}
+	ch := uc.sendFutureBidAsk()
 	for {
 		bidAsk, rErr := bidAskStream.Recv()
 		if rErr != nil {
 			return
 		}
-		uc.bus.PublishTopicEvent(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureBidAsk, code), bidAsk)
-		uc.clientBidAskChannel <- bidAsk
+		uc.bus.PublishTopicEvent(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureBidAsk, detail.GetCode()), bidAsk)
+		ch <- bidAsk
 	}
 }
 
@@ -221,15 +212,4 @@ func (uc *streamUseCase) CloseSingleFutureClient(clientID, code string) {
 	} else {
 		uc.singleFutureClientMap.Store(code, chs)
 	}
-}
-
-func (uc *streamUseCase) GetAllSubscribeCodes() []string {
-	uc.subscribeLock.RLock()
-	defer uc.subscribeLock.RUnlock()
-
-	codes := make([]string, 0, len(uc.subscribeCodeMap))
-	for code := range uc.subscribeCodeMap {
-		codes = append(codes, code)
-	}
-	return codes
 }

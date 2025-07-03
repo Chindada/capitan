@@ -2,10 +2,12 @@ package usecases
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/chindada/capitan/internal/config"
 	"github.com/chindada/capitan/internal/usecases/entity"
+	"github.com/chindada/capitan/internal/usecases/modules/calendar"
 	"github.com/chindada/capitan/internal/usecases/repo"
 	"github.com/chindada/leopard/pkg/eventbus"
 	"github.com/chindada/leopard/pkg/log"
@@ -27,39 +29,46 @@ type Basic interface {
 	GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error)
 
 	GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error)
+
+	GetTargetStock() []*pb.StockDetail
+	GetTargetFuture() []*pb.FutureDetail
 }
 
 type basicUseCase struct {
+	calendar  calendar.Calendar
 	basicRepo repo.BasicRepo
 
 	logger *log.Log
 	bus    *eventbus.Bus
 
 	basicClient pb.BasicInterfaceClient
+
+	targetFuture []*pb.FutureDetail
+	targetStock  []*pb.StockDetail
+	tragetLock   sync.RWMutex
 }
 
 func NewBasic() Basic {
 	cfg := config.Get()
 	pg := cfg.GetPostgresPool()
 	uc := &basicUseCase{
+		calendar:    calendar.NewCalendar(),
 		basicRepo:   repo.NewBasic(pg),
 		logger:      log.Get(),
 		bus:         eventbus.Get(),
 		basicClient: pb.NewBasicInterfaceClient(cfg.GetGRPCConn()),
 	}
-
 	updaters := []func() error{
 		uc.updateStock,
 		uc.updateFuture,
 		uc.updateOption,
+		uc.fillTargetStock,
+		uc.fillClosetFutures,
 	}
 	for _, updater := range updaters {
 		if err := updater(); err != nil {
 			uc.logger.Fatalf("Failed to update data: %v", err)
 		}
-	}
-	if err := uc.getClosetFutures(); err != nil {
-		uc.logger.Fatal("Failed to get closest futures")
 	}
 	return uc
 }
@@ -89,6 +98,32 @@ func (uc *basicUseCase) updateStock() error {
 	return nil
 }
 
+func (uc *basicUseCase) fillTargetStock() error {
+	volumeRank, err := uc.basicClient.GetStockVolumeRank(context.Background(), &pb.VolumeRankRequest{
+		Date: uc.calendar.GetStockLastTradeDay().ToDateOnlyString(),
+	})
+	if err != nil {
+		return err
+	}
+	if len(volumeRank.GetList()) == 0 {
+		uc.logger.Warnf("No stock volume rank found for date %s", uc.calendar.GetStockLastTradeDay().ToDateOnlyString())
+		return nil
+	}
+
+	uc.tragetLock.Lock()
+	defer uc.tragetLock.Unlock()
+
+	for _, rank := range volumeRank.GetList() {
+		stockDetail, sErr := uc.basicRepo.SelectStockDetailByCode(context.Background(), rank.GetCode())
+		if sErr != nil {
+			continue
+		}
+		uc.bus.PublishTopicEvent(topicStreamSubscribeStockTick, stockDetail)
+		uc.targetStock = append(uc.targetStock, stockDetail)
+	}
+	return nil
+}
+
 func (uc *basicUseCase) updateFuture() error {
 	futures, err := uc.basicClient.GetAllFutureDetail(context.Background(), &emptypb.Empty{})
 	if err != nil {
@@ -114,7 +149,10 @@ func (uc *basicUseCase) updateFuture() error {
 	return nil
 }
 
-func (uc *basicUseCase) getClosetFutures() error {
+func (uc *basicUseCase) fillClosetFutures() error {
+	uc.tragetLock.Lock()
+	defer uc.tragetLock.Unlock()
+
 	for _, future := range mainFutures {
 		result, err := uc.basicRepo.SearchFutureDetail(context.Background(), future)
 		if err != nil {
@@ -131,8 +169,9 @@ func (uc *basicUseCase) getClosetFutures() error {
 				continue
 			}
 			if time.Now().Before(dTime) {
-				uc.bus.PublishTopicEvent(topicStreamSubscribeFutureTick, detail.GetCode())
-				uc.bus.PublishTopicEvent(topicStreamSubscribeFutureBidAsk, detail.GetCode())
+				uc.bus.PublishTopicEvent(topicStreamSubscribeFutureTick, detail)
+				uc.bus.PublishTopicEvent(topicStreamSubscribeFutureBidAsk, detail)
+				uc.targetFuture = append(uc.targetFuture, detail)
 				uc.logger.Infof("Found closest future: %s, delivery date: %s", detail.GetCode(), detail.GetDeliveryDate())
 				break
 			}
@@ -180,4 +219,18 @@ func (uc *basicUseCase) GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDet
 
 func (uc *basicUseCase) GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error) {
 	return uc.basicClient.GetFutureHistoryKbar(ctx, req)
+}
+
+func (uc *basicUseCase) GetTargetStock() []*pb.StockDetail {
+	uc.tragetLock.RLock()
+	defer uc.tragetLock.RUnlock()
+
+	return uc.targetStock
+}
+
+func (uc *basicUseCase) GetTargetFuture() []*pb.FutureDetail {
+	uc.tragetLock.RLock()
+	defer uc.tragetLock.RUnlock()
+
+	return uc.targetFuture
 }

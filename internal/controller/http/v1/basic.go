@@ -23,6 +23,9 @@ func NewBasicRoutes(handler *gin.RouterGroup, t usecases.Basic) {
 		h.GET("/options", r.getOptions)
 
 		h.POST("/future/kbar", r.getFutureKbar)
+
+		h.GET("/target/stock", r.getTargetStock)
+		h.GET("/target/future", r.getTargetFuture)
 	}
 }
 
@@ -114,4 +117,36 @@ func (r *basicRoutes) getFutureKbar(c *gin.Context) {
 		return
 	}
 	resp.Success(c, http.StatusOK, data)
+}
+
+// getTargetStock -.
+//
+//	@Tags		Basic V1
+//	@Summary	Get target stocks
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.StockDetailList
+//	@Router		/api/capitan/v1/basic/target/stock [get]
+func (r *basicRoutes) getTargetStock(c *gin.Context) {
+	targets := r.t.GetTargetStock()
+	resp.Success(c, http.StatusOK, &pb.StockDetailList{
+		List: targets,
+	})
+}
+
+// getTargetFuture -.
+//
+//	@Tags		Basic V1
+//	@Summary	Get target futures
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.FutureDetailList
+//	@Router		/api/capitan/v1/basic/target/future [get]
+func (r *basicRoutes) getTargetFuture(c *gin.Context) {
+	targets := r.t.GetTargetFuture()
+	resp.Success(c, http.StatusOK, &pb.FutureDetailList{
+		List: targets,
+	})
 }

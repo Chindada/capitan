@@ -157,21 +157,21 @@ func (uc *tradeUseCase) subscribeTrade() {
 	}
 }
 
-func (uc *tradeUseCase) subscribeFutureTick(code string) {
+func (uc *tradeUseCase) subscribeFutureTick(detail *pb.FutureDetail) {
 	fn := func(_ *pb.FutureTick) {
 		// tickTime, _ := time.ParseInLocation(time.DateTime, tick.GetDateTime(), time.Local)
 		// fmt.Printf("Received tick: %s, price: %f, volume: %d, time: %v, time gap: %d\n",
 		// 	tick.GetCode(), tick.GetClose(), tick.GetVolume(), tickTime, time.Since(tickTime).Milliseconds())
 	}
-	uc.bus.Subscribe(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureTick, code), fn)
+	uc.bus.Subscribe(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureTick, detail.GetCode()), fn)
 }
 
-func (uc *tradeUseCase) subscribeFutureBidAsk(code string) {
+func (uc *tradeUseCase) subscribeFutureBidAsk(detail *pb.FutureDetail) {
 	fn := func(_ *pb.FutureBidAsk) {
 		// bidAskTime, _ := time.ParseInLocation(time.DateTime, bidAsk.GetDateTime(), time.Local)
 		// fmt.Printf("Received bid-ask: %s, time: %v, time gap: %d\n", bidAsk.GetCode(), bidAskTime, time.Since(bidAskTime).Milliseconds())
 	}
-	uc.bus.Subscribe(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureBidAsk, code), fn)
+	uc.bus.Subscribe(fmt.Sprintf("%s/%s", topicStreamSubscribeFutureBidAsk, detail.GetCode()), fn)
 }
 
 type TradeClient struct {

@@ -153,6 +153,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/capitan/v1/basic/target/future": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Get target futures",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.FutureDetailList"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/basic/target/stock": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Get target stocks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.StockDetailList"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/event/login": {
             "get": {
                 "security": [
@@ -300,39 +354,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/pb.APIResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/capitan/v1/stream/subscribe/codes": {
-            "get": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Stream V1"
-                ],
-                "summary": "Get all trade records",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/structpb.ListValue"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/pb.APIResponse"
                         }
@@ -2011,26 +2032,6 @@ const docTemplate = `{
                 "UserRole_ADMIN",
                 "UserRole_ROOT"
             ]
-        },
-        "structpb.ListValue": {
-            "type": "object",
-            "properties": {
-                "values": {
-                    "description": "Repeated field of dynamically typed values.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/structpb.Value"
-                    }
-                }
-            }
-        },
-        "structpb.Value": {
-            "type": "object",
-            "properties": {
-                "kind": {
-                    "description": "The kind of value.\n\nTypes that are valid to be assigned to Kind:\n\n\t*Value_NullValue\n\t*Value_NumberValue\n\t*Value_StringValue\n\t*Value_BoolValue\n\t*Value_StructValue\n\t*Value_ListValue"
-                }
-            }
         },
         "timestamppb.Timestamp": {
             "type": "object",

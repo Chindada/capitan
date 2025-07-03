@@ -106,7 +106,7 @@ func (r *Router) AddV1BasicRoutes(basic usecases.Basic) *Router {
 }
 
 func (r *Router) AddV1StreamRoutes(stream usecases.Stream) *Router {
-	v1.NewStreamRoutes(r.v1Group, r.v1WSGroup, stream)
+	v1.NewStreamRoutes(r.v1WSGroup, stream)
 	return r
 }
 

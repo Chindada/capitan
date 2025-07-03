@@ -553,20 +553,6 @@ definitions:
     - UserRole_USER
     - UserRole_ADMIN
     - UserRole_ROOT
-  structpb.ListValue:
-    properties:
-      values:
-        description: Repeated field of dynamically typed values.
-        items:
-          $ref: '#/definitions/structpb.Value'
-        type: array
-    type: object
-  structpb.Value:
-    properties:
-      kind:
-        description: "The kind of value.\n\nTypes that are valid to be assigned to
-          Kind:\n\n\t*Value_NullValue\n\t*Value_NumberValue\n\t*Value_StringValue\n\t*Value_BoolValue\n\t*Value_StructValue\n\t*Value_ListValue"
-    type: object
   timestamppb.Timestamp:
     properties:
       nanos:
@@ -673,6 +659,38 @@ paths:
       summary: Get stocks
       tags:
       - Basic V1
+  /api/capitan/v1/basic/target/future:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.FutureDetailList'
+      security:
+      - JWT: []
+      summary: Get target futures
+      tags:
+      - Basic V1
+  /api/capitan/v1/basic/target/stock:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.StockDetailList'
+      security:
+      - JWT: []
+      summary: Get target stocks
+      tags:
+      - Basic V1
   /api/capitan/v1/event/login:
     get:
       consumes:
@@ -768,26 +786,6 @@ paths:
       summary: Refresh token
       tags:
       - User V1
-  /api/capitan/v1/stream/subscribe/codes:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/structpb.ListValue'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/pb.APIResponse'
-      security:
-      - JWT: []
-      summary: Get all trade records
-      tags:
-      - Stream V1
   /api/capitan/v1/system/backup:
     delete:
       consumes:

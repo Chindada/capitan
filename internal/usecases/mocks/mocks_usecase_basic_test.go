@@ -100,3 +100,31 @@ func (mr *MockBasicMockRecorder) GetFutureKbar(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFutureKbar", reflect.TypeOf((*MockBasic)(nil).GetFutureKbar), ctx, req)
 }
+
+// GetTargetFuture mocks base method.
+func (m *MockBasic) GetTargetFuture() []*pb.FutureDetail {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTargetFuture")
+	ret0, _ := ret[0].([]*pb.FutureDetail)
+	return ret0
+}
+
+// GetTargetFuture indicates an expected call of GetTargetFuture.
+func (mr *MockBasicMockRecorder) GetTargetFuture() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTargetFuture", reflect.TypeOf((*MockBasic)(nil).GetTargetFuture))
+}
+
+// GetTargetStock mocks base method.
+func (m *MockBasic) GetTargetStock() []*pb.StockDetail {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTargetStock")
+	ret0, _ := ret[0].([]*pb.StockDetail)
+	return ret0
+}
+
+// GetTargetStock indicates an expected call of GetTargetStock.
+func (mr *MockBasicMockRecorder) GetTargetStock() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTargetStock", reflect.TypeOf((*MockBasic)(nil).GetTargetStock))
+}
