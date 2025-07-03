@@ -31,8 +31,8 @@ type Trade interface {
 	GetTradeByOrderID(orderID string) (*pb.Trade, error)
 	CancelTrade(ctx context.Context, in *pb.Trade) (*pb.Trade, error)
 
-	BuyFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error)
-	SellFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error)
+	BuyFuture(ctx context.Context, in *pb.OrderDetail) (*pb.Trade, error)
+	SellFuture(ctx context.Context, in *pb.OrderDetail) (*pb.Trade, error)
 
 	GetFuturePositionByCode(ctx context.Context, code string) (*pb.FuturePositionList, error)
 	GetFuturePosition(ctx context.Context) (*pb.FuturePositionList, error)
@@ -231,11 +231,11 @@ func (uc *tradeUseCase) CloseSingleCodeClient(clientID, code string) {
 	}
 }
 
-func (uc *tradeUseCase) BuyFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
+func (uc *tradeUseCase) BuyFuture(ctx context.Context, in *pb.OrderDetail) (*pb.Trade, error) {
 	return uc.tradeClient.BuyFuture(ctx, in)
 }
 
-func (uc *tradeUseCase) SellFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
+func (uc *tradeUseCase) SellFuture(ctx context.Context, in *pb.OrderDetail) (*pb.Trade, error) {
 	return uc.tradeClient.SellFuture(ctx, in)
 }
 

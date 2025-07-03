@@ -43,7 +43,7 @@ func (m *MockTrade) EXPECT() *MockTradeMockRecorder {
 }
 
 // BuyFuture mocks base method.
-func (m *MockTrade) BuyFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
+func (m *MockTrade) BuyFuture(ctx context.Context, in *pb.OrderDetail) (*pb.Trade, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuyFuture", ctx, in)
 	ret0, _ := ret[0].(*pb.Trade)
@@ -211,7 +211,7 @@ func (mr *MockTradeMockRecorder) GetUndoneTradesByCode(code any) *gomock.Call {
 }
 
 // SellFuture mocks base method.
-func (m *MockTrade) SellFuture(ctx context.Context, in *pb.BaseOrder) (*pb.Trade, error) {
+func (m *MockTrade) SellFuture(ctx context.Context, in *pb.OrderDetail) (*pb.Trade, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SellFuture", ctx, in)
 	ret0, _ := ret[0].(*pb.Trade)

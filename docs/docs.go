@@ -660,7 +660,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/pb.BaseOrder"
+                            "$ref": "#/definitions/pb.OrderDetail"
                         }
                     }
                 ],
@@ -710,7 +710,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/pb.BaseOrder"
+                            "$ref": "#/definitions/pb.Trade"
                         }
                     }
                 ],
@@ -954,7 +954,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/pb.BaseOrder"
+                            "$ref": "#/definitions/pb.OrderDetail"
                         }
                     }
                 ],
@@ -1247,23 +1247,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/pb.Backup"
                     }
-                }
-            }
-        },
-        "pb.BaseOrder": {
-            "type": "object",
-            "properties": {
-                "action": {
-                    "$ref": "#/definitions/pb.OrderAction"
-                },
-                "code": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "quantity": {
-                    "type": "integer"
                 }
             }
         },
@@ -1728,6 +1711,31 @@ const docTemplate = `{
                 "OrderAction_ORDER_ACTION_BUY",
                 "OrderAction_ORDER_ACTION_SELL"
             ]
+        },
+        "pb.OrderDetail": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/pb.OrderAction"
+                },
+                "autu_cancel_enable": {
+                    "description": "enable auto cancel",
+                    "type": "boolean"
+                },
+                "autu_cancel_time": {
+                    "description": "in seconds",
+                    "type": "integer"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
         },
         "pb.OrderStatus": {
             "type": "integer",

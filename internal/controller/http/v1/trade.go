@@ -228,7 +228,7 @@ func (r *tradeRoutes) sendTrade(ws ws.WS) chan *pb.Trade {
 //	@security	JWT
 //	@Accept		application/json
 //	@Produce	application/json
-//	@param		body	body		pb.BaseOrder	true	"Body"
+//	@param		body	body		pb.Trade	true	"Body"
 //	@Success	200		{object}	pb.Trade
 //	@Failure	400		{object}	pb.APIResponse
 //	@Failure	500		{object}	pb.APIResponse
@@ -255,13 +255,13 @@ func (r *tradeRoutes) cancelTrade(c *gin.Context) {
 //	@security	JWT
 //	@Accept		application/json
 //	@Produce	application/json
-//	@param		body	body		pb.BaseOrder	true	"Body"
+//	@param		body	body		pb.OrderDetail	true	"Body"
 //	@Success	200		{object}	pb.Trade
 //	@Failure	400		{object}	pb.APIResponse
 //	@Failure	500		{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/trade/buy/future [post]
 func (r *tradeRoutes) buyFuture(c *gin.Context) {
-	req := &pb.BaseOrder{}
+	req := &pb.OrderDetail{}
 	err := c.Bind(req)
 	if err != nil {
 		resp.Fail(c, http.StatusBadRequest, err)
@@ -282,13 +282,13 @@ func (r *tradeRoutes) buyFuture(c *gin.Context) {
 //	@security	JWT
 //	@Accept		application/json
 //	@Produce	application/json
-//	@param		body	body		pb.BaseOrder	true	"Body"
+//	@param		body	body		pb.OrderDetail	true	"Body"
 //	@Success	200		{object}	pb.Trade
 //	@Failure	400		{object}	pb.APIResponse
 //	@Failure	500		{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/trade/sell/future [post]
 func (r *tradeRoutes) sellFuture(c *gin.Context) {
-	req := &pb.BaseOrder{}
+	req := &pb.OrderDetail{}
 	err := c.Bind(req)
 	if err != nil {
 		resp.Fail(c, http.StatusBadRequest, err)

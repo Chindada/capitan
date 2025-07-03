@@ -24,17 +24,6 @@ definitions:
           $ref: '#/definitions/pb.Backup'
         type: array
     type: object
-  pb.BaseOrder:
-    properties:
-      action:
-        $ref: '#/definitions/pb.OrderAction'
-      code:
-        type: string
-      price:
-        type: number
-      quantity:
-        type: integer
-    type: object
   pb.BasicUser:
     properties:
       email:
@@ -344,6 +333,23 @@ definitions:
     - OrderAction_ORDER_ACTION_UNKNOWN
     - OrderAction_ORDER_ACTION_BUY
     - OrderAction_ORDER_ACTION_SELL
+  pb.OrderDetail:
+    properties:
+      action:
+        $ref: '#/definitions/pb.OrderAction'
+      autu_cancel_enable:
+        description: enable auto cancel
+        type: boolean
+      autu_cancel_time:
+        description: in seconds
+        type: integer
+      code:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+    type: object
   pb.OrderStatus:
     enum:
     - 0
@@ -966,7 +972,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/pb.BaseOrder'
+          $ref: '#/definitions/pb.OrderDetail'
       produces:
       - application/json
       responses:
@@ -997,7 +1003,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/pb.BaseOrder'
+          $ref: '#/definitions/pb.Trade'
       produces:
       - application/json
       responses:
@@ -1147,7 +1153,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/pb.BaseOrder'
+          $ref: '#/definitions/pb.OrderDetail'
       produces:
       - application/json
       responses:
