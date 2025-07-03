@@ -43,8 +43,8 @@ github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UF
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/chindada/leopard v1.0.0 h1:eL96WEBujQBfS4QvITlF64vpXyj6Poy7iIh4RJart8Q=
 github.com/chindada/leopard v1.0.0/go.mod h1:YOz8urXQ+VyRKXADZQlfUmoiWGuGUFmqm9FBq1HlFRk=
-github.com/chindada/panther v0.0.0-20250703060841-9795db75d92f h1:CQdg7btJK5N6HMHsSZWt/WH/KyjCzP8r+Q798Sxlnjo=
-github.com/chindada/panther v0.0.0-20250703060841-9795db75d92f/go.mod h1:dq3isLvBx5fekS6hI8W59NLeeVaC0MGzaL65fHN5Tqk=
+github.com/chindada/panther v0.0.0-20250703092432-95f54c8fc4ae h1:cgx+HGzAr81MnDGaNQPIM7zGzgTyBPVv98O5u9M/27c=
+github.com/chindada/panther v0.0.0-20250703092432-95f54c8fc4ae/go.mod h1:dq3isLvBx5fekS6hI8W59NLeeVaC0MGzaL65fHN5Tqk=
 github.com/cloudwego/base64x v0.1.5 h1:XPciSp1xaq2VCSt6lF0phncD4koWyULpl5bUxbfCyP4=
 github.com/cloudwego/base64x v0.1.5/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
