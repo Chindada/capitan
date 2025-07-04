@@ -1718,14 +1718,6 @@ const docTemplate = `{
                 "action": {
                     "$ref": "#/definitions/pb.OrderAction"
                 },
-                "autu_cancel_enable": {
-                    "description": "enable auto cancel",
-                    "type": "boolean"
-                },
-                "autu_cancel_time": {
-                    "description": "in seconds",
-                    "type": "integer"
-                },
                 "code": {
                     "type": "string"
                 },
