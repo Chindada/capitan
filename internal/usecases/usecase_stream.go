@@ -16,9 +16,11 @@ import (
 type Stream interface {
 	CreateFutureClient(client *FutureClient)
 	CloseFutureClient(clientID string)
-
 	CreateSingleFutureClient(code string, client *FutureClient)
 	CloseSingleFutureClient(clientID, code string)
+
+	CreateStockClient(client *StockClient)
+	CloseStockClient(clientID string)
 }
 
 type streamUseCase struct {
@@ -31,6 +33,9 @@ type streamUseCase struct {
 
 	futureClientMap  map[string]*FutureClient
 	futureClientLock sync.RWMutex
+
+	stockClientMap  map[string]*StockClient
+	stockClientLock sync.RWMutex
 }
 
 func NewStream() Stream {
@@ -40,10 +45,47 @@ func NewStream() Stream {
 		bus:             eventbus.Get(),
 		streamClient:    pb.NewStreamInterfaceClient(cfg.GetGRPCConn()),
 		futureClientMap: make(map[string]*FutureClient),
+		stockClientMap:  make(map[string]*StockClient),
 	}
+	uc.bus.SubscribeAsync(topicStreamSubscribeStockQuote, false, uc.subscribeStockQuote)
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureTick, false, uc.subscribeFutureTick)
 	uc.bus.SubscribeAsync(topicStreamSubscribeFutureBidAsk, false, uc.subscribeFutureBidAsk)
 	return uc
+}
+
+func (uc *streamUseCase) sendSingleStockQuote() chan *pb.StockQuote {
+	ch := make(chan *pb.StockQuote)
+	go func() {
+		for {
+			quote := <-ch
+			channels, ok := uc.singleFutureClientMap.Load(quote.GetCode())
+			if !ok {
+				continue
+			}
+			chs, _ := channels.([]*StockClient)
+			for _, client := range chs {
+				client.QuoteChannel <- quote
+			}
+		}
+	}()
+	return ch
+}
+
+func (uc *streamUseCase) sendStockQuote() chan *pb.StockQuote {
+	channel := make(chan *pb.StockQuote)
+	go func() {
+		singleChannel := uc.sendSingleStockQuote()
+		for {
+			tick := <-channel
+			singleChannel <- tick
+			uc.stockClientLock.RLock()
+			for _, client := range uc.stockClientMap {
+				client.QuoteChannel <- tick
+			}
+			uc.stockClientLock.RUnlock()
+		}
+	}()
+	return channel
 }
 
 func (uc *streamUseCase) sendSingleFutureTick() chan *pb.FutureTick {
@@ -116,8 +158,26 @@ func (uc *streamUseCase) sendFutureBidAsk() chan *pb.FutureBidAsk {
 	return channel
 }
 
+func (uc *streamUseCase) subscribeStockQuote(detail *pb.StockDetail) {
+	tickStream, err := uc.streamClient.SubscribeStockQuote(context.Background(), &pb.SubscribeRequest{
+		Code: detail.GetCode(),
+	})
+	if err != nil {
+		uc.logger.Errorf("Failed to subscribe to future tick for code %s: %v", detail.GetCode(), err)
+		return
+	}
+	ch := uc.sendStockQuote()
+	for {
+		t, rErr := tickStream.Recv()
+		if rErr != nil {
+			return
+		}
+		ch <- t
+	}
+}
+
 func (uc *streamUseCase) subscribeFutureTick(detail *pb.FutureDetail) {
-	tickStream, err := uc.streamClient.SubscribeFutureTick(context.Background(), &pb.SubscribeFutureRequest{
+	tickStream, err := uc.streamClient.SubscribeFutureTick(context.Background(), &pb.SubscribeRequest{
 		Code: detail.GetCode(),
 	})
 	if err != nil {
@@ -136,7 +196,7 @@ func (uc *streamUseCase) subscribeFutureTick(detail *pb.FutureDetail) {
 }
 
 func (uc *streamUseCase) subscribeFutureBidAsk(detail *pb.FutureDetail) {
-	bidAskStream, err := uc.streamClient.SubscribeFutureBidAsk(context.Background(), &pb.SubscribeFutureRequest{
+	bidAskStream, err := uc.streamClient.SubscribeFutureBidAsk(context.Background(), &pb.SubscribeRequest{
 		Code: detail.GetCode(),
 	})
 	if err != nil {
@@ -211,5 +271,30 @@ func (uc *streamUseCase) CloseSingleFutureClient(clientID, code string) {
 		uc.singleFutureClientMap.Delete(code)
 	} else {
 		uc.singleFutureClientMap.Store(code, chs)
+	}
+}
+
+type StockClient struct {
+	ClientID     string
+	QuoteChannel chan *pb.StockQuote
+}
+
+func (uc *streamUseCase) CreateStockClient(client *StockClient) {
+	uc.stockClientLock.Lock()
+	uc.stockClientMap[client.ClientID] = client
+	uc.stockClientLock.Unlock()
+}
+
+func (uc *streamUseCase) CloseStockClient(clientID string) {
+	if clientID == "" {
+		return
+	}
+
+	defer uc.stockClientLock.Unlock()
+	uc.stockClientLock.Lock()
+
+	if c, exist := uc.stockClientMap[clientID]; exist {
+		close(c.QuoteChannel)
+		delete(uc.stockClientMap, clientID)
 	}
 }

@@ -64,6 +64,18 @@ func (mr *MockStreamMockRecorder) CloseSingleFutureClient(clientID, code any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSingleFutureClient", reflect.TypeOf((*MockStream)(nil).CloseSingleFutureClient), clientID, code)
 }
 
+// CloseStockClient mocks base method.
+func (m *MockStream) CloseStockClient(clientID string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CloseStockClient", clientID)
+}
+
+// CloseStockClient indicates an expected call of CloseStockClient.
+func (mr *MockStreamMockRecorder) CloseStockClient(clientID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseStockClient", reflect.TypeOf((*MockStream)(nil).CloseStockClient), clientID)
+}
+
 // CreateFutureClient mocks base method.
 func (m *MockStream) CreateFutureClient(client *usecases.FutureClient) {
 	m.ctrl.T.Helper()
@@ -86,4 +98,16 @@ func (m *MockStream) CreateSingleFutureClient(code string, client *usecases.Futu
 func (mr *MockStreamMockRecorder) CreateSingleFutureClient(code, client any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSingleFutureClient", reflect.TypeOf((*MockStream)(nil).CreateSingleFutureClient), code, client)
+}
+
+// CreateStockClient mocks base method.
+func (m *MockStream) CreateStockClient(client *usecases.StockClient) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CreateStockClient", client)
+}
+
+// CreateStockClient indicates an expected call of CreateStockClient.
+func (mr *MockStreamMockRecorder) CreateStockClient(client any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStockClient", reflect.TypeOf((*MockStream)(nil).CreateStockClient), client)
 }

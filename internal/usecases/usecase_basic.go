@@ -119,7 +119,7 @@ func (uc *basicUseCase) fillTargetStock() error {
 		if sErr != nil {
 			continue
 		}
-		uc.bus.PublishTopicEvent(topicStreamSubscribeStockTick, stockDetail)
+		uc.bus.PublishTopicEvent(topicStreamSubscribeStockQuote, stockDetail)
 		uc.targetStock = append(uc.targetStock, stockDetail)
 	}
 	return nil

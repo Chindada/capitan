@@ -29,6 +29,7 @@ func NewStreamRoutes(ws *gin.RouterGroup, t usecases.Stream) {
 	base := "/stream"
 	w := ws.Group(base)
 	{
+		w.GET("/stock/quote/trigger", r.streamAllStockQuote)
 		w.GET("/futures/trigger", r.streamAllFutrues)
 		w.GET("/futures/single/trigger", r.streamSingleFutrues)
 	}
@@ -136,6 +137,50 @@ func (r *streamRoutes) sendBidAsk(ws ws.WS) chan *pb.FutureBidAsk {
 				ws.WriteBinaryMessage(b)
 			}
 			r.futureBidAskPool.Put(bidAsk)
+		}
+	}()
+	return channel
+}
+
+// streamAllStockQuote /ws/capitan/v1/stream/stock/quote/trigger [get].
+func (r *streamRoutes) streamAllStockQuote(c *gin.Context) {
+	forwardChan := make(chan []byte)
+	ws, err := ws.New(c, forwardChan)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	clientID := uuid.NewString()
+	go func() {
+		defer func() {
+			r.t.CloseStockClient(clientID)
+		}()
+		for {
+			r.t.CreateStockClient(&usecases.StockClient{
+				ClientID:     clientID,
+				QuoteChannel: r.sendQuote(ws),
+			})
+			_, ok := <-forwardChan
+			if !ok {
+				break
+			}
+		}
+	}()
+	ws.ReadMessage()
+}
+
+func (r *streamRoutes) sendQuote(ws ws.WS) chan *pb.StockQuote {
+	channel := make(chan *pb.StockQuote)
+	go func() {
+		for {
+			cl, ok := <-channel
+			if !ok {
+				return
+			}
+			b, mErr := proto.Marshal(cl)
+			if mErr == nil {
+				ws.WriteBinaryMessage(b)
+			}
 		}
 	}()
 	return channel
