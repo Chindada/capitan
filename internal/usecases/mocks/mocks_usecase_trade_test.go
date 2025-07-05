@@ -165,21 +165,6 @@ func (mr *MockTradeMockRecorder) GetMargin(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMargin", reflect.TypeOf((*MockTrade)(nil).GetMargin), ctx)
 }
 
-// GetTradeByOrderID mocks base method.
-func (m *MockTrade) GetTradeByOrderID(orderID string) (*pb.Trade, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTradeByOrderID", orderID)
-	ret0, _ := ret[0].(*pb.Trade)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetTradeByOrderID indicates an expected call of GetTradeByOrderID.
-func (mr *MockTradeMockRecorder) GetTradeByOrderID(orderID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTradeByOrderID", reflect.TypeOf((*MockTrade)(nil).GetTradeByOrderID), orderID)
-}
-
 // GetTrades mocks base method.
 func (m *MockTrade) GetTrades(req *pb.QueryTradeRequest) ([]*pb.Trade, error) {
 	m.ctrl.T.Helper()

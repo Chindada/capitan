@@ -28,7 +28,6 @@ type Trade interface {
 	GetUndoneTradesByCode(code string) ([]*pb.Trade, error)
 
 	TriggerUpdateAndPublishTrade() error
-	GetTradeByOrderID(orderID string) (*pb.Trade, error)
 	CancelTrade(ctx context.Context, in *pb.Trade) (*pb.Trade, error)
 
 	BuyFuture(ctx context.Context, in *pb.OrderDetail) (*pb.Trade, error)
@@ -91,20 +90,20 @@ func (uc *tradeUseCase) TriggerUpdateAndPublishTrade() error {
 	_, err := uc.tradeClient.UpdateAndPublishTrade(context.Background(), &emptypb.Empty{})
 	if err != nil {
 		s := status.Convert(err)
-		return fmt.Errorf("error(%d): %s", s.Code(), s.Message())
+		return fmt.Errorf("TriggerUpdateAndPublishTrade error(%d): %s", s.Code(), s.Message())
 	}
 	return nil
 }
 
-func (uc *tradeUseCase) GetTradeByOrderID(orderID string) (*pb.Trade, error) {
-	ctx := context.Background()
-	trade, err := uc.tradeClient.GetTradeByOrderID(ctx, &pb.QueryTradeRequest{OrderId: orderID})
-	if err != nil {
-		s := status.Convert(err)
-		return nil, fmt.Errorf("error(%d): %s", s.Code(), s.Message())
-	}
-	return trade, nil
-}
+// func (uc *tradeUseCase) GetTradeByOrderID(orderID string) (*pb.Trade, error) {
+// 	ctx := context.Background()
+// 	trade, err := uc.tradeClient.GetTradeByOrderID(ctx, &pb.QueryTradeRequest{OrderId: orderID})
+// 	if err != nil {
+// 		s := status.Convert(err)
+// 		return nil, fmt.Errorf("error(%d): %s", s.Code(), s.Message())
+// 	}
+// 	return trade, nil
+// }
 
 func (uc *tradeUseCase) sendSingleFutureTick() chan *pb.Trade {
 	ch := make(chan *pb.Trade)
@@ -141,13 +140,12 @@ func (uc *tradeUseCase) subscribeTrade() {
 	trade, err := uc.tradeClient.SubscribeTrade(context.Background(), &emptypb.Empty{})
 	if err != nil {
 		s := status.Convert(err)
-		uc.logger.Fatalf("Error(%d): %s", s.Code(), s.Message())
+		uc.logger.Fatalf("subscribeTrade error(%d): %s", s.Code(), s.Message())
 	}
 	for {
 		t, rErr := trade.Recv()
 		if rErr != nil {
-			s := status.Convert(rErr)
-			uc.logger.Fatalf("Error(%d): %s", s.Code(), s.Message())
+			return
 		}
 		uc.tradeChannel <- t
 		go func() {

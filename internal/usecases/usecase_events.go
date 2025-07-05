@@ -109,13 +109,12 @@ func (uc *eventsUseCase) subscribeShioajiEvent() {
 	eventStream, err := uc.streamClient.SubscribeShioajiEvent(context.Background(), &emptypb.Empty{})
 	if err != nil {
 		s := status.Convert(err)
-		uc.logger.Fatalf("Error(%d): %s", s.Code(), s.Message())
+		uc.logger.Fatalf("subscribeShioajiEvent error(%d): %s", s.Code(), s.Message())
 	}
 	for {
 		event, rErr := eventStream.Recv()
 		if rErr != nil {
-			s := status.Convert(rErr)
-			uc.logger.Fatalf("Error(%d): %s", s.Code(), s.Message())
+			return
 		}
 		err = uc.eventRepo.InsertShioajiEvent(context.Background(), event)
 		if err != nil {

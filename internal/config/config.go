@@ -146,7 +146,6 @@ func Init() {
 	once.Do(func() {
 		c := newConfig()
 		c.loadEnv()
-		c.connectGRPC()
 		c.launchDB()
 		c.setPostgresPool()
 		c.writeProxyConfig()
@@ -230,7 +229,7 @@ func (c *Config) runExporter(dbt launcher.PGLauncher) {
 	}
 }
 
-func (c *Config) connectGRPC() {
+func (c *Config) ConnectGRPC(interrupt chan os.Signal) {
 	if c.InfraConfig.GRPC.Host == "" {
 		c.logger.Fatal("GRPC host is not set")
 	}
@@ -240,7 +239,7 @@ func (c *Config) connectGRPC() {
 	retry := 60
 	c.logger.Infof("Connecting to %s...", net.JoinHostPort(c.InfraConfig.GRPC.Host, c.InfraConfig.GRPC.Port))
 	for i := range retry {
-		if c.tryConnectGRPC() {
+		if c.tryConnectGRPC(interrupt) {
 			return
 		}
 		if i < retry-1 {
@@ -254,7 +253,7 @@ func (c *Config) connectGRPC() {
 	}
 }
 
-func (c *Config) tryConnectGRPC() bool {
+func (c *Config) tryConnectGRPC(interrupt chan os.Signal) bool {
 	gRPConn, err := gRPCClient.NewInsecureClient(net.JoinHostPort(c.InfraConfig.GRPC.Host, c.InfraConfig.GRPC.Port))
 	if err != nil {
 		return false
@@ -268,7 +267,9 @@ func (c *Config) tryConnectGRPC() bool {
 		for {
 			_, err = stream.Recv()
 			if err != nil {
-				c.logger.Fatal("Lost connection to gRPC server")
+				c.logger.Error("Lost connection to gRPC server")
+				interrupt <- os.Interrupt
+				return
 			}
 		}
 	}()

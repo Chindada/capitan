@@ -10,12 +10,17 @@ import (
 	"github.com/chindada/capitan/internal/usecases"
 	"github.com/chindada/leopard/pkg/httpserver"
 	"github.com/chindada/leopard/pkg/log"
-	"github.com/go-co-op/gocron/v2"
 )
 
 func Start() {
+	// Waiting signal
+	exit := make(chan os.Signal, 1)
+
 	logger := log.Get()
 	cfg := config.Get()
+
+	// Connect gRPC server
+	cfg.ConnectGRPC(exit)
 
 	// Pre process, do not adjust the order, except for new feature
 	ucEvents := usecases.NewEvents()
@@ -48,33 +53,6 @@ func Start() {
 		logger.Info("Shut down")
 	}()
 
-	// Waiting signal
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-	setupStopJob(interrupt)
-	<-interrupt
-}
-
-func setupStopJob(interrupt chan os.Signal) {
-	exit := func() {
-		interrupt <- os.Interrupt
-	}
-	stopSchedule := []string{
-		"20 8 * * *",
-		"40 14 * * *",
-	}
-	s, err := gocron.NewScheduler()
-	if err != nil {
-		log.Get().Fatal(err)
-	}
-	for _, schedule := range stopSchedule {
-		_, err = s.NewJob(
-			gocron.CronJob(schedule, false),
-			gocron.NewTask(exit),
-		)
-		if err != nil {
-			log.Get().Fatalf("init scheduler error: %v", err)
-		}
-	}
-	go s.Start()
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	<-exit
 }
