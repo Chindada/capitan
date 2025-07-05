@@ -29,6 +29,7 @@ type Basic interface {
 	GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error)
 
 	GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error)
+	GetLastFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error)
 
 	GetTargetStock() []*pb.StockDetail
 	GetTargetFuture() []*pb.FutureDetail
@@ -100,14 +101,15 @@ func (uc *basicUseCase) updateStock() error {
 }
 
 func (uc *basicUseCase) fillTargetStock() error {
+	date := uc.calendar.GetStockLastTradeDay().GetStartDate().Format(time.DateOnly)
 	volumeRank, err := uc.basicClient.GetStockVolumeRank(context.Background(), &pb.VolumeRankRequest{
-		Date: uc.calendar.GetStockLastTradeDay().ToDateOnlyString(),
+		Date: date,
 	})
 	if err != nil {
 		return err
 	}
 	if len(volumeRank.GetList()) == 0 {
-		uc.logger.Warnf("No stock volume rank found for date %s", uc.calendar.GetStockLastTradeDay().ToDateOnlyString())
+		uc.logger.Warnf("No stock volume rank found for date %s", date)
 		return nil
 	}
 
@@ -220,6 +222,20 @@ func (uc *basicUseCase) GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDet
 
 func (uc *basicUseCase) GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error) {
 	return uc.basicClient.GetFutureHistoryKbar(ctx, req)
+}
+
+func (uc *basicUseCase) GetLastFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error) {
+	request := &pb.HistoryKbarRequest{Code: req.GetCode()}
+	tradeDay := uc.calendar.GetFutureTradeDay()
+	if time.Now().Before(tradeDay.EndTime) && time.Now().After(tradeDay.StartTime) {
+		request.Start = tradeDay.StartTime.Format(time.DateOnly)
+		request.End = tradeDay.EndTime.Format(time.DateOnly)
+	} else {
+		lastTradeDay := uc.calendar.GetFutureLastTradeDay()
+		request.Start = lastTradeDay.StartTime.Format(time.DateOnly)
+		request.End = lastTradeDay.EndTime.Format(time.DateOnly)
+	}
+	return uc.basicClient.GetFutureHistoryKbar(ctx, request)
 }
 
 func (uc *basicUseCase) GetTargetStock() []*pb.StockDetail {

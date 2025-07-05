@@ -12,20 +12,21 @@ const (
 )
 
 type TradeDay struct {
-	Start time.Time
-	End   time.Time
+	StartTime time.Time
+	EndTime   time.Time
 }
 
-func (t TradeDay) ToDateOnly() time.Time {
-	return time.Date(t.Start.Year(), t.Start.Month(), t.Start.Day(), 0, 0, 0, 0, time.Local)
+func (t TradeDay) GetStartDate() time.Time {
+	return time.Date(t.StartTime.Year(), t.StartTime.Month(), t.StartTime.Day(), 0, 0, 0, 0, time.Local)
 }
 
-func (t TradeDay) ToDateOnlyString() string {
-	return time.Date(t.Start.Year(), t.Start.Month(), t.Start.Day(), 0, 0, 0, 0, time.Local).Format(time.DateOnly)
+func (t TradeDay) GetEndDate() time.Time {
+	return time.Date(t.EndTime.Year(), t.EndTime.Month(), t.EndTime.Day(), 0, 0, 0, 0, time.Local)
 }
 
 type Calendar interface {
 	GetFutureTradeDay() TradeDay
+	GetFutureLastTradeDay() TradeDay
 
 	GetStockTradeDay() TradeDay
 	GetStockLastTradeDay() TradeDay
@@ -56,13 +57,12 @@ func (t *calendar) GetStockTradeDay() TradeDay {
 	} else {
 		nowTime = time.Now()
 	}
-
 	d := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.Local)
 	var startTime, endTime time.Time
 	for {
 		if t.isTradeDay(d) {
 			startTime = d.Add(9 * time.Hour)
-			endTime = startTime.Add(13 * time.Hour).Add(30 * time.Minute)
+			endTime = d.Add(13 * time.Hour).Add(30 * time.Minute)
 			break
 		}
 		d = d.AddDate(0, 0, 1)
@@ -71,11 +71,11 @@ func (t *calendar) GetStockTradeDay() TradeDay {
 }
 
 func (t *calendar) GetStockLastTradeDay() TradeDay {
-	firstDay := t.GetStockTradeDay().ToDateOnly()
+	firstDay := t.GetStockTradeDay().GetStartDate()
 	for {
 		if t.isTradeDay(firstDay.AddDate(0, 0, -1)) {
 			startTime := firstDay.AddDate(0, 0, -1).Add(9 * time.Hour)
-			endTime := firstDay.AddDate(0, 0, -1).Add(9 * time.Hour).Add(30 * time.Minute)
+			endTime := firstDay.AddDate(0, 0, -1).Add(13 * time.Hour).Add(30 * time.Minute)
 			return TradeDay{startTime, endTime}
 		}
 		firstDay = firstDay.AddDate(0, 0, -1)
@@ -89,7 +89,6 @@ func (t *calendar) GetFutureTradeDay() TradeDay {
 	} else {
 		nowTime = time.Now()
 	}
-
 	var startTime, endTime time.Time
 	d := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.Local)
 	for {
@@ -99,7 +98,6 @@ func (t *calendar) GetFutureTradeDay() TradeDay {
 		}
 		d = d.AddDate(0, 0, 1)
 	}
-
 	d = d.AddDate(0, 0, -1)
 	for {
 		if t.isTradeDay(d) {
@@ -108,8 +106,19 @@ func (t *calendar) GetFutureTradeDay() TradeDay {
 		}
 		d = d.AddDate(0, 0, -1)
 	}
-
 	return TradeDay{startTime, endTime}
+}
+
+func (t *calendar) GetFutureLastTradeDay() TradeDay {
+	firstDay := t.GetFutureTradeDay().GetStartDate()
+	for {
+		if t.isTradeDay(firstDay.AddDate(0, 0, -1)) {
+			startTime := firstDay.AddDate(0, 0, -1).Add(15 * time.Hour)
+			endTime := firstDay.Add(13 * time.Hour).Add(45 * time.Minute)
+			return TradeDay{startTime, endTime}
+		}
+		firstDay = firstDay.AddDate(0, 0, -1)
+	}
 }
 
 type holidayList struct {

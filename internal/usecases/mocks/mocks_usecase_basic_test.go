@@ -101,6 +101,21 @@ func (mr *MockBasicMockRecorder) GetFutureKbar(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFutureKbar", reflect.TypeOf((*MockBasic)(nil).GetFutureKbar), ctx, req)
 }
 
+// GetLastFutureKbar mocks base method.
+func (m *MockBasic) GetLastFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLastFutureKbar", ctx, req)
+	ret0, _ := ret[0].(*pb.HistoryKbarList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLastFutureKbar indicates an expected call of GetLastFutureKbar.
+func (mr *MockBasicMockRecorder) GetLastFutureKbar(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastFutureKbar", reflect.TypeOf((*MockBasic)(nil).GetLastFutureKbar), ctx, req)
+}
+
 // GetTargetFuture mocks base method.
 func (m *MockBasic) GetTargetFuture() []*pb.FutureDetail {
 	m.ctrl.T.Helper()

@@ -31,7 +31,46 @@ const docTemplate = `{
                 "tags": [
                     "Basic V1"
                 ],
-                "summary": "Get futures",
+                "summary": "Get future kbar",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.HistoryKbarList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/capitan/v1/basic/future/kbar/last": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Get last futures kbar",
                 "responses": {
                     "200": {
                         "description": "OK",
