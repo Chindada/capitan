@@ -28,6 +28,10 @@ type Basic interface {
 	GetAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error)
 	GetAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error)
 
+	GetStockDetailByCode(ctx context.Context, code string) (*pb.StockDetail, error)
+	GetFutureDetailByCode(ctx context.Context, code string) (*pb.FutureDetail, error)
+	GetOptionDetailByCode(ctx context.Context, code string) (*pb.OptionDetail, error)
+
 	GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error)
 	GetLastFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error)
 
@@ -250,4 +254,16 @@ func (uc *basicUseCase) GetTargetFuture() []*pb.FutureDetail {
 	defer uc.tragetLock.RUnlock()
 
 	return uc.targetFuture
+}
+
+func (uc *basicUseCase) GetStockDetailByCode(ctx context.Context, code string) (*pb.StockDetail, error) {
+	return uc.basicRepo.SelectStockDetailByCode(ctx, code)
+}
+
+func (uc *basicUseCase) GetFutureDetailByCode(ctx context.Context, code string) (*pb.FutureDetail, error) {
+	return uc.basicRepo.SelectFutureDetailByCode(ctx, code)
+}
+
+func (uc *basicUseCase) GetOptionDetailByCode(ctx context.Context, code string) (*pb.OptionDetail, error) {
+	return uc.basicRepo.SelectOptionDetailByCode(ctx, code)
 }

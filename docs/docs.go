@@ -110,6 +110,14 @@ const docTemplate = `{
                     "Basic V1"
                 ],
                 "summary": "Get futures",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -176,6 +184,14 @@ const docTemplate = `{
                     "Basic V1"
                 ],
                 "summary": "Get stocks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

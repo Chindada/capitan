@@ -7,13 +7,14 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/appleboy/gin-jwt/v2 v2.10.3
 	github.com/chindada/leopard v1.0.0
-	github.com/chindada/panther v0.0.0-20250705001616-31d7159538e2
+	github.com/chindada/panther v0.0.0-20250705143837-b8df67d90dec
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/magefile/mage v1.15.0
+	github.com/maruel/natural v1.1.1
 	github.com/open-policy-agent/opa v1.6.0
 	github.com/pquerna/otp v1.5.0
 	github.com/prometheus/client_golang v1.22.0

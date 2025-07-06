@@ -627,6 +627,11 @@ paths:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: code
+        in: query
+        name: code
+        type: string
       produces:
       - application/json
       responses:
@@ -667,6 +672,11 @@ paths:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: code
+        in: query
+        name: code
+        type: string
       produces:
       - application/json
       responses:

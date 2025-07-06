@@ -3,12 +3,14 @@ package usecases
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/chindada/capitan/internal/config"
 	"github.com/chindada/leopard/pkg/eventbus"
 	"github.com/chindada/leopard/pkg/log"
 	"github.com/chindada/panther/golang/pb"
+	"github.com/maruel/natural"
 )
 
 //go:generate mockgen -source=usecase_stream.go -destination=./mocks/mocks_usecase_stream_test.go -package=mocks
@@ -36,6 +38,10 @@ type streamUseCase struct {
 
 	stockClientMap  map[string]*StockClient
 	stockClientLock sync.RWMutex
+
+	futureCodes []string
+	stockCodes  []string
+	targetLock  sync.RWMutex
 }
 
 func NewStream() Stream {
@@ -167,6 +173,12 @@ func (uc *streamUseCase) subscribeStockQuote(detail *pb.StockDetail) {
 		return
 	}
 	ch := uc.sendStockQuote()
+	uc.targetLock.Lock()
+	uc.stockCodes = append(uc.stockCodes, detail.GetCode())
+	sort.SliceStable(uc.stockCodes, func(i, j int) bool {
+		return natural.Less(uc.stockCodes[i], uc.stockCodes[j])
+	})
+	uc.targetLock.Unlock()
 	for {
 		t, rErr := tickStream.Recv()
 		if rErr != nil {
@@ -185,6 +197,12 @@ func (uc *streamUseCase) subscribeFutureTick(detail *pb.FutureDetail) {
 		return
 	}
 	ch := uc.sendFutureTick()
+	uc.targetLock.Lock()
+	uc.futureCodes = append(uc.futureCodes, detail.GetCode())
+	sort.SliceStable(uc.futureCodes, func(i, j int) bool {
+		return natural.Less(uc.futureCodes[i], uc.futureCodes[j])
+	})
+	uc.targetLock.Unlock()
 	for {
 		t, rErr := tickStream.Recv()
 		if rErr != nil {
@@ -221,6 +239,33 @@ type FutureClient struct {
 }
 
 func (uc *streamUseCase) CreateFutureClient(client *FutureClient) {
+	uc.targetLock.RLock()
+	defer uc.targetLock.RUnlock()
+
+	snapshots, err := uc.streamClient.GetSnapshot(context.Background(), &pb.SnapshotRequest{
+		Type:  pb.SnapshotRequestType_SNAPSHOT_REQUEST_TYPE_FUTURE,
+		Codes: uc.futureCodes,
+	})
+	if err != nil {
+		uc.logger.Errorf("Failed to get future snapshot: %v", err)
+		return
+	}
+	for _, v := range uc.futureCodes {
+		code := v
+		if snapshots == nil || snapshots.GetSnapshots() == nil {
+			continue
+		}
+		s, exist := snapshots.GetSnapshots()[code]
+		if !exist {
+			uc.logger.Warnf("No snapshot found for code %s", code)
+			continue
+		}
+		client.TickChannel <- &pb.FutureTick{
+			Code:     code,
+			Close:    s.GetClose(),
+			PriceChg: s.GetChangePrice(),
+		}
+	}
 	uc.futureClientLock.Lock()
 	uc.futureClientMap[client.ClientID] = client
 	uc.futureClientLock.Unlock()
@@ -242,6 +287,28 @@ func (uc *streamUseCase) CloseFutureClient(clientID string) {
 }
 
 func (uc *streamUseCase) CreateSingleFutureClient(code string, client *FutureClient) {
+	snapshots, err := uc.streamClient.GetSnapshot(context.Background(), &pb.SnapshotRequest{
+		Type:  pb.SnapshotRequestType_SNAPSHOT_REQUEST_TYPE_FUTURE,
+		Codes: []string{code},
+	})
+	if err != nil {
+		uc.logger.Errorf("Failed to get future snapshot: %v", err)
+		return
+	}
+	if snapshots == nil || snapshots.GetSnapshots() == nil {
+		uc.logger.Warnf("No snapshot found for code %s", code)
+		return
+	}
+	s, exist := snapshots.GetSnapshots()[code]
+	if !exist {
+		uc.logger.Warnf("No snapshot found for code %s", code)
+		return
+	}
+	client.TickChannel <- &pb.FutureTick{
+		Code:     code,
+		Close:    s.GetClose(),
+		PriceChg: s.GetChangePrice(),
+	}
 	channels, _ := uc.singleFutureClientMap.LoadOrStore(code, []*FutureClient{})
 	chs, _ := channels.([]*FutureClient)
 	chs = append(chs, client)
@@ -280,6 +347,33 @@ type StockClient struct {
 }
 
 func (uc *streamUseCase) CreateStockClient(client *StockClient) {
+	uc.targetLock.RLock()
+	defer uc.targetLock.RUnlock()
+
+	snapshots, err := uc.streamClient.GetSnapshot(context.Background(), &pb.SnapshotRequest{
+		Type:  pb.SnapshotRequestType_SNAPSHOT_REQUEST_TYPE_STOCK,
+		Codes: uc.stockCodes,
+	})
+	if err != nil {
+		uc.logger.Errorf("Failed to get future snapshot: %v", err)
+		return
+	}
+	for _, v := range uc.stockCodes {
+		code := v
+		if snapshots == nil || snapshots.GetSnapshots() == nil {
+			continue
+		}
+		s, exist := snapshots.GetSnapshots()[code]
+		if !exist {
+			uc.logger.Warnf("No snapshot found for code %s", code)
+			continue
+		}
+		client.QuoteChannel <- &pb.StockQuote{
+			Code:     code,
+			Close:    s.GetClose(),
+			PriceChg: s.GetChangePrice(),
+		}
+	}
 	uc.stockClientLock.Lock()
 	uc.stockClientMap[client.ClientID] = client
 	uc.stockClientLock.Unlock()

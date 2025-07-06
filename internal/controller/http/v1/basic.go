@@ -37,18 +37,31 @@ func NewBasicRoutes(handler *gin.RouterGroup, t usecases.Basic) {
 //	@security	JWT
 //	@Accept		application/json
 //	@Produce	application/json
-//	@Success	200	{object}	pb.StockDetailList
-//	@Failure	500	{object}	pb.APIResponse
+//	@Param		code	query		string	false	"code"
+//	@Success	200		{object}	pb.StockDetailList
+//	@Failure	500		{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/basic/stocks [get]
 func (r *basicRoutes) getStocks(c *gin.Context) {
-	stocks, err := r.t.GetAllStockDetail(c)
-	if err != nil {
-		resp.Fail(c, http.StatusInternalServerError, err)
-		return
+	code := c.Query("code")
+	if code == "" {
+		stocks, err := r.t.GetAllStockDetail(c)
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
+		resp.Success(c, http.StatusOK, &pb.StockDetailList{
+			List: stocks,
+		})
+	} else {
+		stock, err := r.t.GetStockDetailByCode(c, code)
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
+		resp.Success(c, http.StatusOK, &pb.StockDetailList{
+			List: []*pb.StockDetail{stock},
+		})
 	}
-	resp.Success(c, http.StatusOK, &pb.StockDetailList{
-		List: stocks,
-	})
 }
 
 // getFutures -.
@@ -58,18 +71,31 @@ func (r *basicRoutes) getStocks(c *gin.Context) {
 //	@security	JWT
 //	@Accept		application/json
 //	@Produce	application/json
-//	@Success	200	{object}	pb.FutureDetailList
-//	@Failure	500	{object}	pb.APIResponse
+//	@Param		code	query		string	false	"code"
+//	@Success	200		{object}	pb.FutureDetailList
+//	@Failure	500		{object}	pb.APIResponse
 //	@Router		/api/capitan/v1/basic/futures [get]
 func (r *basicRoutes) getFutures(c *gin.Context) {
-	data, err := r.t.GetAllFutureDetail(c)
-	if err != nil {
-		resp.Fail(c, http.StatusInternalServerError, err)
-		return
+	code := c.Query("code")
+	if code == "" {
+		data, err := r.t.GetAllFutureDetail(c)
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
+		resp.Success(c, http.StatusOK, &pb.FutureDetailList{
+			List: data,
+		})
+	} else {
+		future, err := r.t.GetFutureDetailByCode(c, code)
+		if err != nil {
+			resp.Fail(c, http.StatusInternalServerError, err)
+			return
+		}
+		resp.Success(c, http.StatusOK, &pb.FutureDetailList{
+			List: []*pb.FutureDetail{future},
+		})
 	}
-	resp.Success(c, http.StatusOK, &pb.FutureDetailList{
-		List: data,
-	})
 }
 
 // getOptions -.
