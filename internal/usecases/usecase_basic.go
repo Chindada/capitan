@@ -179,7 +179,6 @@ func (uc *basicUseCase) fillClosetFutures() error {
 				uc.bus.PublishTopicEvent(topicStreamSubscribeFutureTick, detail)
 				uc.bus.PublishTopicEvent(topicStreamSubscribeFutureBidAsk, detail)
 				uc.targetFuture = append(uc.targetFuture, detail)
-				uc.logger.Infof("Found closest future: %s, delivery date: %s", detail.GetCode(), detail.GetDeliveryDate())
 				break
 			}
 		}
