@@ -12,7 +12,7 @@ resources := {}
 default allow := false
 
 allow if {
-	input.role == "root"
+	input.role == "user_role_root"
 }
 
 allow if {

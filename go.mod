@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/appleboy/gin-jwt/v2 v2.10.3
 	github.com/chindada/leopard v1.0.0
-	github.com/chindada/panther v0.0.0-20250705143837-b8df67d90dec
+	github.com/chindada/panther v0.0.0-20250708022628-fc817486f458
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0

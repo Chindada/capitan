@@ -27,21 +27,21 @@ func NewTrade(pg client.PGClient) TradeRepo {
 }
 
 func (r *trade) getStockCode(t *pb.Trade) any {
-	if t.GetType() == pb.OrderType_TYPE_STOCK_SHARE || t.GetType() == pb.OrderType_TYPE_STOCK_LOT {
+	if t.GetType() == pb.OrderType_ORDER_TYPE_STOCK_SHARE || t.GetType() == pb.OrderType_ORDER_TYPE_STOCK_LOT {
 		return t.GetCode()
 	}
 	return nil
 }
 
 func (r *trade) getFutureCode(t *pb.Trade) any {
-	if t.GetType() == pb.OrderType_TYPE_FUTURE {
+	if t.GetType() == pb.OrderType_ORDER_TYPE_FUTURE {
 		return t.GetCode()
 	}
 	return nil
 }
 
 func (r *trade) getOptionCode(t *pb.Trade) any {
-	if t.GetType() == pb.OrderType_TYPE_OPTION {
+	if t.GetType() == pb.OrderType_ORDER_TYPE_OPTION {
 		return t.GetCode()
 	}
 	return nil

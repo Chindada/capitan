@@ -96,7 +96,7 @@ func (uc *systemUseCase) initUsers() {
 				Email:    fmt.Sprintf("%s@%s", defaultUserRoot, defaultMailDomain),
 				Username: defaultUserRoot,
 				Password: res,
-				Role:     pb.UserRole_ROOT,
+				Role:     pb.UserRole_USER_ROLE_ROOT,
 			},
 		}
 		uc.logger.Infof("No user found, creating %s user: %s",
@@ -114,9 +114,9 @@ func (uc *systemUseCase) CreateUser(ctx context.Context, t *pb.User) error {
 		return ErrEmailFormatInvalid
 	}
 
-	if t.GetBasic().GetRole() != pb.UserRole_ROOT &&
-		t.GetBasic().GetRole() != pb.UserRole_ADMIN &&
-		t.GetBasic().GetRole() != pb.UserRole_USER {
+	if t.GetBasic().GetRole() != pb.UserRole_USER_ROLE_ROOT &&
+		t.GetBasic().GetRole() != pb.UserRole_USER_ROLE_ADMIN &&
+		t.GetBasic().GetRole() != pb.UserRole_USER_ROLE_USER {
 		return ErrRoleInvalid
 	}
 
@@ -168,7 +168,7 @@ func (uc *systemUseCase) Login(ctx *gin.Context, loginReq *pb.LoginRequest) (*pb
 	var code pb.LoginRespCode
 	user, err := uc.userRepo.SelectUserByUsername(ctx, loginReq.GetUsername())
 	if err != nil {
-		code = pb.LoginRespCode_DB_ERROR
+		code = pb.LoginRespCode_LOGIN_RESP_CODE_DB_ERROR
 		return nil, err
 	}
 	defer func() {
@@ -181,12 +181,12 @@ func (uc *systemUseCase) Login(ctx *gin.Context, loginReq *pb.LoginRequest) (*pb
 		uc.bus.PublishTopicEvent(topicLogin, event)
 	}()
 	if user.GetBasic().GetUsername() == "" {
-		code = pb.LoginRespCode_USER_NOT_FOUND
+		code = pb.LoginRespCode_LOGIN_RESP_CODE_USER_NOT_FOUND
 		return nil, ErrUserNotFound
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.GetBasic().GetPassword()), []byte(loginReq.GetPassword()))
 	if err != nil {
-		code = pb.LoginRespCode_PASSWORD_INCORRECT
+		code = pb.LoginRespCode_LOGIN_RESP_CODE_PASSWORD_INCORRECT
 		return nil, ErrPasswordNotMatch
 	}
 	if !user.GetEnableTotp() || user.GetTotpId() == 0 {
@@ -197,11 +197,11 @@ func (uc *systemUseCase) Login(ctx *gin.Context, loginReq *pb.LoginRequest) (*pb
 	}
 	totpKey, err := uc.userRepo.SelectTotpByID(ctx, user.GetTotpId())
 	if err != nil {
-		code = pb.LoginRespCode_DB_ERROR
+		code = pb.LoginRespCode_LOGIN_RESP_CODE_DB_ERROR
 		return nil, err
 	}
 	if !uc.ValidateTotp(totpKey.GetSecret(), loginReq.GetMfaCode()) {
-		code = pb.LoginRespCode_MFA_FAILED
+		code = pb.LoginRespCode_LOGIN_RESP_CODE_MFA_FAILED
 		return nil, ErrMfaCodeNotMatch
 	}
 	return user, nil

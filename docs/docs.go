@@ -1565,11 +1565,11 @@ const docTemplate = `{
                 4
             ],
             "x-enum-varnames": [
-                "LoginRespCode_OK",
-                "LoginRespCode_PASSWORD_INCORRECT",
-                "LoginRespCode_USER_NOT_FOUND",
-                "LoginRespCode_DB_ERROR",
-                "LoginRespCode_MFA_FAILED"
+                "LoginRespCode_LOGIN_RESP_CODE_OK",
+                "LoginRespCode_LOGIN_RESP_CODE_PASSWORD_INCORRECT",
+                "LoginRespCode_LOGIN_RESP_CODE_USER_NOT_FOUND",
+                "LoginRespCode_LOGIN_RESP_CODE_DB_ERROR",
+                "LoginRespCode_LOGIN_RESP_CODE_MFA_FAILED"
             ]
         },
         "pb.LoginResponse": {
@@ -1819,11 +1819,11 @@ const docTemplate = `{
                 4
             ],
             "x-enum-varnames": [
-                "OrderType_TYPE_UNKNOWN",
-                "OrderType_TYPE_STOCK_LOT",
-                "OrderType_TYPE_STOCK_SHARE",
-                "OrderType_TYPE_FUTURE",
-                "OrderType_TYPE_OPTION"
+                "OrderType_ORDER_TYPE_UNKNOWN",
+                "OrderType_ORDER_TYPE_STOCK_LOT",
+                "OrderType_ORDER_TYPE_STOCK_SHARE",
+                "OrderType_ORDER_TYPE_FUTURE",
+                "OrderType_ORDER_TYPE_OPTION"
             ]
         },
         "pb.QueryTradeRequest": {
@@ -2082,10 +2082,10 @@ const docTemplate = `{
                 3
             ],
             "x-enum-varnames": [
-                "UserRole_UNKNOWN",
-                "UserRole_USER",
-                "UserRole_ADMIN",
-                "UserRole_ROOT"
+                "UserRole_USER_ROLE_UNKNOWN",
+                "UserRole_USER_ROLE_USER",
+                "UserRole_USER_ROLE_ADMIN",
+                "UserRole_USER_ROLE_ROOT"
             ]
         },
         "timestamppb.Timestamp": {
