@@ -37,6 +37,13 @@ type Basic interface {
 
 	GetTargetStock() []*pb.StockDetail
 	GetTargetFuture() []*pb.FutureDetail
+
+	CreateFutureContract(ctx context.Context, t *pb.FutureContract) error
+	GetAllFutureContract(ctx context.Context) ([]*pb.FutureContract, error)
+	GetFutureContractByID(ctx context.Context, id int64) (*pb.FutureContract, error)
+	UpdateFutureContract(ctx context.Context, t *pb.FutureContract) error
+	DeleteFutureContract(ctx context.Context, id []int64) error
+	SetFutureDetailContract(ctx context.Context, req *pb.UpdateFutureDetailRequest) error
 }
 
 type basicUseCase struct {
@@ -265,4 +272,28 @@ func (uc *basicUseCase) GetFutureDetailByCode(ctx context.Context, code string) 
 
 func (uc *basicUseCase) GetOptionDetailByCode(ctx context.Context, code string) (*pb.OptionDetail, error) {
 	return uc.basicRepo.SelectOptionDetailByCode(ctx, code)
+}
+
+func (uc *basicUseCase) CreateFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	return uc.basicRepo.InsertFutureContract(ctx, t)
+}
+
+func (uc *basicUseCase) GetAllFutureContract(ctx context.Context) ([]*pb.FutureContract, error) {
+	return uc.basicRepo.SelectAllFutureContract(ctx)
+}
+
+func (uc *basicUseCase) GetFutureContractByID(ctx context.Context, id int64) (*pb.FutureContract, error) {
+	return uc.basicRepo.SelectFutureContractByID(ctx, id)
+}
+
+func (uc *basicUseCase) UpdateFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	return uc.basicRepo.UpdateFutureContract(ctx, t)
+}
+
+func (uc *basicUseCase) DeleteFutureContract(ctx context.Context, id []int64) error {
+	return uc.basicRepo.DeleteFutureContract(ctx, id)
+}
+
+func (uc *basicUseCase) SetFutureDetailContract(ctx context.Context, req *pb.UpdateFutureDetailRequest) error {
+	return uc.basicRepo.UpdateFutureDetailContract(ctx, req)
 }

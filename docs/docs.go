@@ -15,6 +15,183 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/capitan/v1/basic/contract/future": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Get all future contracts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.FutureContractList"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Update future contract",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.FutureContract"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/emptypb.Empty"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Create future contract",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.FutureContract"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/emptypb.Empty"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Delete future contract",
+                "parameters": [
+                    {
+                        "description": "id(int) of contract",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structpb.ListValue"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/emptypb.Empty"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/capitan/v1/basic/future/kbar": {
             "post": {
                 "security": [
@@ -123,6 +300,54 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/pb.FutureDetailList"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Basic V1"
+                ],
+                "summary": "Update futures",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.UpdateFutureDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/emptypb.Empty"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pb.APIResponse"
                         }
                     },
                     "500": {
@@ -1336,8 +1561,25 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.DayTrade": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "DayTrade_DAY_TRADE_UNKNOWN",
+                "DayTrade_DAY_TRADE_YES",
+                "DayTrade_DAY_TRADE_ONLY_BUY",
+                "DayTrade_DAY_TRADE_NO"
+            ]
+        },
         "pb.FetchStatus": {
             "type": "integer",
+            "format": "int32",
             "enum": [
                 0,
                 1,
@@ -1351,6 +1593,49 @@ const docTemplate = `{
                 "FetchStatus_FETCH_STATUS_UNFETCH"
             ]
         },
+        "pb.FutureContract": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                },
+                "fee": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "initial_margin": {
+                    "type": "integer"
+                },
+                "maintenance_margin": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price_per_tick": {
+                    "type": "number"
+                },
+                "tax": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
+                }
+            }
+        },
+        "pb.FutureContractList": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.FutureContract"
+                    }
+                }
+            }
+        },
         "pb.FutureDetail": {
             "type": "object",
             "properties": {
@@ -1359,6 +1644,12 @@ const docTemplate = `{
                 },
                 "code": {
                     "type": "string"
+                },
+                "contract": {
+                    "$ref": "#/definitions/pb.FutureContract"
+                },
+                "contract_id": {
+                    "type": "integer"
                 },
                 "currency": {
                     "type": "string"
@@ -1557,6 +1848,7 @@ const docTemplate = `{
         },
         "pb.LoginRespCode": {
             "type": "integer",
+            "format": "int32",
             "enum": [
                 0,
                 1,
@@ -1756,6 +2048,7 @@ const docTemplate = `{
         },
         "pb.OrderAction": {
             "type": "integer",
+            "format": "int32",
             "enum": [
                 0,
                 1,
@@ -1773,6 +2066,12 @@ const docTemplate = `{
                 "action": {
                     "$ref": "#/definitions/pb.OrderAction"
                 },
+                "auto_cancel": {
+                    "type": "boolean"
+                },
+                "auto_cancel_seconds": {
+                    "type": "integer"
+                },
                 "code": {
                     "type": "string"
                 },
@@ -1781,11 +2080,15 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "retry": {
+                    "type": "boolean"
                 }
             }
         },
         "pb.OrderStatus": {
             "type": "integer",
+            "format": "int32",
             "enum": [
                 0,
                 1,
@@ -1811,6 +2114,7 @@ const docTemplate = `{
         },
         "pb.OrderType": {
             "type": "integer",
+            "format": "int32",
             "enum": [
                 0,
                 1,
@@ -1884,7 +2188,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "day_trade": {
-                    "type": "string"
+                    "$ref": "#/definitions/pb.DayTrade"
                 },
                 "delivery_date": {
                     "type": "string"
@@ -2039,6 +2343,20 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.UpdateFutureDetailRequest": {
+            "type": "object",
+            "properties": {
+                "codes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "contract_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "pb.User": {
             "type": "object",
             "properties": {
@@ -2075,6 +2393,7 @@ const docTemplate = `{
         },
         "pb.UserRole": {
             "type": "integer",
+            "format": "int32",
             "enum": [
                 0,
                 1,
@@ -2087,6 +2406,26 @@ const docTemplate = `{
                 "UserRole_USER_ROLE_ADMIN",
                 "UserRole_USER_ROLE_ROOT"
             ]
+        },
+        "structpb.ListValue": {
+            "type": "object",
+            "properties": {
+                "values": {
+                    "description": "Repeated field of dynamically typed values.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/structpb.Value"
+                    }
+                }
+            }
+        },
+        "structpb.Value": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "description": "The kind of value.\n\nTypes that are valid to be assigned to Kind:\n\n\t*Value_NullValue\n\t*Value_NumberValue\n\t*Value_StringValue\n\t*Value_BoolValue\n\t*Value_StructValue\n\t*Value_ListValue"
+                }
+            }
         },
         "timestamppb.Timestamp": {
             "type": "object",

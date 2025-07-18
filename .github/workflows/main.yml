@@ -18,7 +18,7 @@ env:
   IMAGE_NAME_BASE: ""
   SRV_PLATFORM_PAIR: ""
 
-  GO_VERSION: "1.24.3"
+  GO_VERSION: "1.24.5"
   WEB_VERSION: ""
 
 jobs:

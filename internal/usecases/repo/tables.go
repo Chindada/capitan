@@ -1,9 +1,10 @@
 package repo
 
 const (
-	tableNameBasicStock  string = "basic_stock"
-	tableNameBasicFuture string = "basic_future"
-	tableNameBasicOption string = "basic_option"
+	tableNameBasicStock          string = "basic_stock"
+	tableNameBasicFuture         string = "basic_future"
+	tableNameBasicOption         string = "basic_option"
+	tableNameBasicFutureContract string = "basic_future_contract"
 
 	tableNameSystemAccount      string = "system_account"
 	tableNameSystemSetting      string = "system_setting"

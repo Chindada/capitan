@@ -7,6 +7,8 @@ import (
 	"github.com/chindada/capitan/internal/usecases"
 	"github.com/chindada/panther/golang/pb"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type basicRoutes struct {
@@ -19,8 +21,15 @@ func NewBasicRoutes(handler *gin.RouterGroup, t usecases.Basic) {
 	h := handler.Group("/basic")
 	{
 		h.GET("/stocks", r.getStocks)
-		h.GET("/futures", r.getFutures)
 		h.GET("/options", r.getOptions)
+
+		h.GET("/futures", r.getFutures)
+		h.PUT("/futures", r.updateFutures)
+
+		h.GET("/contract/future", r.getAllFutureContract)
+		h.POST("/contract/future", r.createFutureContract)
+		h.PUT("/contract/future", r.updateFutureContract)
+		h.DELETE("/contract/future", r.deleteFutureContract)
 
 		h.POST("/future/kbar", r.getFutureKbar)
 		h.POST("/future/kbar/last", r.getFutureLastKbar)
@@ -96,6 +105,33 @@ func (r *basicRoutes) getFutures(c *gin.Context) {
 			List: []*pb.FutureDetail{future},
 		})
 	}
+}
+
+// updateFutures -.
+//
+//	@Tags		Basic V1
+//	@Summary	Update futures
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		pb.UpdateFutureDetailRequest	true	"Body"
+//	@Success	200		{object}	emptypb.Empty
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/futures [put]
+func (r *basicRoutes) updateFutures(c *gin.Context) {
+	req := &pb.UpdateFutureDetailRequest{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+	err = r.t.SetFutureDetailContract(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, &emptypb.Empty{})
 }
 
 // getOptions -.
@@ -203,4 +239,116 @@ func (r *basicRoutes) getTargetFuture(c *gin.Context) {
 	resp.Success(c, http.StatusOK, &pb.FutureDetailList{
 		List: targets,
 	})
+}
+
+// getAllFutureContract -.
+//
+//	@Tags		Basic V1
+//	@Summary	Get all future contracts
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@Success	200	{object}	pb.FutureContractList
+//	@Failure	500	{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/contract/future [get]
+func (r *basicRoutes) getAllFutureContract(c *gin.Context) {
+	contracts, err := r.t.GetAllFutureContract(c)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, &pb.FutureContractList{
+		List: contracts,
+	})
+}
+
+// createFutureContract -.
+//
+//	@Tags		Basic V1
+//	@Summary	Create future contract
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		pb.FutureContract	true	"Body"
+//	@Success	200		{object}	emptypb.Empty
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/contract/future [post]
+func (r *basicRoutes) createFutureContract(c *gin.Context) {
+	req := &pb.FutureContract{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+	err = r.t.CreateFutureContract(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, &emptypb.Empty{})
+}
+
+// updateFutureContract -.
+//
+//	@Tags		Basic V1
+//	@Summary	Update future contract
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		pb.FutureContract	true	"Body"
+//	@Success	200		{object}	emptypb.Empty
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/contract/future [put]
+func (r *basicRoutes) updateFutureContract(c *gin.Context) {
+	req := &pb.FutureContract{}
+	err := c.Bind(req)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+	err = r.t.UpdateFutureContract(c, req)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, &emptypb.Empty{})
+}
+
+// deleteFutureContract -.
+//
+//	@Tags		Basic V1
+//	@Summary	Delete future contract
+//	@security	JWT
+//	@Accept		application/json
+//	@Produce	application/json
+//	@param		body	body		structpb.ListValue	true	"id(int) of contract"
+//	@Success	200		{object}	emptypb.Empty
+//	@Failure	400		{object}	pb.APIResponse
+//	@Failure	500		{object}	pb.APIResponse
+//	@Router		/api/capitan/v1/basic/contract/future [delete]
+func (r *basicRoutes) deleteFutureContract(c *gin.Context) {
+	indexPB := &structpb.ListValue{}
+	err := c.Bind(indexPB)
+	if err != nil {
+		resp.Fail(c, http.StatusBadRequest, err)
+		return
+	}
+
+	var idList []int64
+	for _, id := range indexPB.GetValues() {
+		v := id.GetNumberValue()
+		if v == 0 {
+			resp.Fail(c, http.StatusBadRequest, resp.ErrTypeWrong)
+			return
+		}
+		idList = append(idList, int64(v))
+	}
+	err = r.t.DeleteFutureContract(c, idList)
+	if err != nil {
+		resp.Fail(c, http.StatusInternalServerError, err)
+		return
+	}
+	resp.Success(c, http.StatusOK, &emptypb.Empty{})
 }

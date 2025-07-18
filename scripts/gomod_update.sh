@@ -8,7 +8,7 @@ go mod init github.com/chindada/capitan
 go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 go install go.uber.org/mock/mockgen@latest
 
-go get -u github.com/chindada/panther@fc817486f4588fccc6e4d69f3931682f585107d7
+go get -u github.com/chindada/panther@b92e8114ddf0f716a280901eb7fbfa37f27bdf74
 go get -u github.com/chindada/leopard@v1.0.0
 
 go mod tidy

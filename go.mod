@@ -1,13 +1,13 @@
 module github.com/chindada/capitan
 
-go 1.24.4
+go 1.24.5
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/appleboy/gin-jwt/v2 v2.10.3
 	github.com/chindada/leopard v1.0.0
-	github.com/chindada/panther v0.0.0-20250708022628-fc817486f458
+	github.com/chindada/panther v0.0.0-20250710052022-b92e8114ddf0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
@@ -23,7 +23,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
-	github.com/swaggo/swag v1.16.4
+	github.com/swaggo/swag v1.16.5
 	go.uber.org/mock v0.5.2
 	golang.org/x/crypto v0.38.0
 	google.golang.org/grpc v1.73.0
@@ -111,6 +111,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.14.0 // indirect
+	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect

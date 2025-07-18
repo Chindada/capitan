@@ -41,6 +41,49 @@ func (m *MockBasic) EXPECT() *MockBasicMockRecorder {
 	return m.recorder
 }
 
+// CreateFutureContract mocks base method.
+func (m *MockBasic) CreateFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFutureContract", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateFutureContract indicates an expected call of CreateFutureContract.
+func (mr *MockBasicMockRecorder) CreateFutureContract(ctx, t any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFutureContract", reflect.TypeOf((*MockBasic)(nil).CreateFutureContract), ctx, t)
+}
+
+// DeleteFutureContract mocks base method.
+func (m *MockBasic) DeleteFutureContract(ctx context.Context, id []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFutureContract", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFutureContract indicates an expected call of DeleteFutureContract.
+func (mr *MockBasicMockRecorder) DeleteFutureContract(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFutureContract", reflect.TypeOf((*MockBasic)(nil).DeleteFutureContract), ctx, id)
+}
+
+// GetAllFutureContract mocks base method.
+func (m *MockBasic) GetAllFutureContract(ctx context.Context) ([]*pb.FutureContract, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllFutureContract", ctx)
+	ret0, _ := ret[0].([]*pb.FutureContract)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllFutureContract indicates an expected call of GetAllFutureContract.
+func (mr *MockBasicMockRecorder) GetAllFutureContract(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllFutureContract", reflect.TypeOf((*MockBasic)(nil).GetAllFutureContract), ctx)
+}
+
 // GetAllFutureDetail mocks base method.
 func (m *MockBasic) GetAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error) {
 	m.ctrl.T.Helper()
@@ -84,6 +127,21 @@ func (m *MockBasic) GetAllStockDetail(ctx context.Context) ([]*pb.StockDetail, e
 func (mr *MockBasicMockRecorder) GetAllStockDetail(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllStockDetail", reflect.TypeOf((*MockBasic)(nil).GetAllStockDetail), ctx)
+}
+
+// GetFutureContractByID mocks base method.
+func (m *MockBasic) GetFutureContractByID(ctx context.Context, id int64) (*pb.FutureContract, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFutureContractByID", ctx, id)
+	ret0, _ := ret[0].(*pb.FutureContract)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFutureContractByID indicates an expected call of GetFutureContractByID.
+func (mr *MockBasicMockRecorder) GetFutureContractByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFutureContractByID", reflect.TypeOf((*MockBasic)(nil).GetFutureContractByID), ctx, id)
 }
 
 // GetFutureDetailByCode mocks base method.
@@ -187,4 +245,32 @@ func (m *MockBasic) GetTargetStock() []*pb.StockDetail {
 func (mr *MockBasicMockRecorder) GetTargetStock() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTargetStock", reflect.TypeOf((*MockBasic)(nil).GetTargetStock))
+}
+
+// SetFutureDetailContract mocks base method.
+func (m *MockBasic) SetFutureDetailContract(ctx context.Context, req *pb.UpdateFutureDetailRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetFutureDetailContract", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetFutureDetailContract indicates an expected call of SetFutureDetailContract.
+func (mr *MockBasicMockRecorder) SetFutureDetailContract(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFutureDetailContract", reflect.TypeOf((*MockBasic)(nil).SetFutureDetailContract), ctx, req)
+}
+
+// UpdateFutureContract mocks base method.
+func (m *MockBasic) UpdateFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateFutureContract", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFutureContract indicates an expected call of UpdateFutureContract.
+func (mr *MockBasicMockRecorder) UpdateFutureContract(ctx, t any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFutureContract", reflect.TypeOf((*MockBasic)(nil).UpdateFutureContract), ctx, t)
 }

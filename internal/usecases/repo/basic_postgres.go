@@ -3,6 +3,7 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +12,8 @@ import (
 	"github.com/chindada/capitan/internal/usecases/entity"
 	"github.com/chindada/panther/golang/pb"
 	"github.com/chindada/panther/pkg/client"
+	"github.com/jackc/pgx/v5/pgtype"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 //go:generate mockgen -source=basic_postgres.go -destination=./mocks/mocks_basic_postgres_test.go -package=mocks
@@ -23,12 +26,19 @@ type BasicRepo interface {
 	InsertFutureDetail(ctx context.Context, t []*pb.FutureDetail) error
 	SelectFutureDetailByCode(ctx context.Context, code string) (*pb.FutureDetail, error)
 	SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error)
+	UpdateFutureDetailContract(ctx context.Context, req *pb.UpdateFutureDetailRequest) error
 
 	InsertOptionDetail(ctx context.Context, t []*pb.OptionDetail) error
 	SelectOptionDetailByCode(ctx context.Context, code string) (*pb.OptionDetail, error)
 	SelectAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, error)
 
 	SearchFutureDetail(ctx context.Context, code string) ([]*pb.FutureDetail, error)
+
+	InsertFutureContract(ctx context.Context, t *pb.FutureContract) error
+	SelectAllFutureContract(ctx context.Context) ([]*pb.FutureContract, error)
+	SelectFutureContractByID(ctx context.Context, id int64) (*pb.FutureContract, error)
+	UpdateFutureContract(ctx context.Context, t *pb.FutureContract) error
+	DeleteFutureContract(ctx context.Context, id []int64) error
 }
 
 type basic struct {
@@ -66,7 +76,7 @@ func (r *basic) InsertStockDetail(ctx context.Context, t []*pb.StockDetail) erro
 			item.GetName(),
 			item.GetExchange(),
 			item.GetCategory(),
-			item.GetDayTrade() == entity.DayTradeYes,
+			item.GetDayTrade(),
 			item.GetReference(),
 			updateTime,
 		)
@@ -119,24 +129,18 @@ func (r *basic) SelectStockDetailByCode(ctx context.Context, code string) (*pb.S
 	row := tx.QueryRow(ctx, sql, args...)
 	var item pb.StockDetail
 	var updateDate time.Time
-	var dayTrade bool
 	if err = row.Scan(
 		&item.Code,
 		&item.Name,
 		&item.Exchange,
 		&item.Category,
-		&dayTrade,
+		&item.DayTrade,
 		&item.Reference,
 		&updateDate,
 	); err != nil {
 		return nil, err
 	}
 	item.UpdateDate = updateDate.Format(entity.ShortSlashTimeLayout)
-	if dayTrade {
-		item.DayTrade = entity.DayTradeYes
-	} else {
-		item.DayTrade = entity.DayTradeNo
-	}
 	return &item, tx.Commit(ctx)
 }
 
@@ -169,24 +173,18 @@ func (r *basic) SelectAllStockDetail(ctx context.Context) ([]*pb.StockDetail, er
 	for rows.Next() {
 		var item pb.StockDetail
 		var updateDate time.Time
-		var dayTrade bool
 		if err = rows.Scan(
 			&item.Code,
 			&item.Name,
 			&item.Exchange,
 			&item.Category,
-			&dayTrade,
+			&item.DayTrade,
 			&item.Reference,
 			&updateDate,
 		); err != nil {
 			return nil, err
 		}
 		item.UpdateDate = updateDate.Format(entity.ShortSlashTimeLayout)
-		if dayTrade {
-			item.DayTrade = entity.DayTradeYes
-		} else {
-			item.DayTrade = entity.DayTradeNo
-		}
 		stocks = append(stocks, &item)
 	}
 	return stocks, tx.Commit(ctx)
@@ -273,10 +271,18 @@ func (r *basic) InsertFutureDetail(ctx context.Context, t []*pb.FutureDetail) er
 func (r *basic) SelectFutureDetailByCode(ctx context.Context, code string) (*pb.FutureDetail, error) {
 	builder := r.Builder().
 		Select(
-			"code", "symbol", "name", "category", "delivery_month", "delivery_date",
-			"underlying_kind", "unit", "limit_up", "limit_down", "reference", "update_date",
+			"basic_future.code", "basic_future.symbol", "basic_future.name", "basic_future.category",
+			"basic_future.delivery_month", "basic_future.delivery_date",
+			"basic_future.underlying_kind", "basic_future.unit", "basic_future.limit_up", "basic_future.limit_down",
+			"basic_future.reference", "basic_future.update_date",
+			"COALESCE(basic_future.contract_id,0)",
+			"COALESCE(basic_future_contract.name,'')", "COALESCE(basic_future_contract.price_per_tick,0)",
+			"COALESCE(basic_future_contract.initial_margin,0)", "COALESCE(basic_future_contract.maintenance_margin,0)",
+			"COALESCE(basic_future_contract.fee,0)", "COALESCE(basic_future_contract.tax,0)",
+			"basic_future_contract.created_at", "basic_future_contract.updated_at",
 		).
 		From(tableNameBasicFuture).
+		LeftJoin("basic_future_contract ON basic_future.contract_id = basic_future_contract.id").
 		Where(squirrel.Eq{"code": code})
 
 	sql, args, err := builder.ToSql()
@@ -291,36 +297,42 @@ func (r *basic) SelectFutureDetailByCode(ctx context.Context, code string) (*pb.
 	defer r.Rollback(ctx, tx)
 
 	row := tx.QueryRow(ctx, sql, args...)
-	var item pb.FutureDetail
-	var dDate, updateData time.Time
+	item := pb.FutureDetail{
+		Contract: &pb.FutureContract{},
+	}
+	var dDate, updateData pgtype.Timestamptz
+	var contractCreated, contractUpdated pgtype.Timestamptz
 	if err = row.Scan(
-		&item.Code,
-		&item.Symbol,
-		&item.Name,
-		&item.Category,
-		&item.DeliveryMonth,
-		&dDate,
-		&item.UnderlyingKind,
-		&item.Unit,
-		&item.LimitUp,
-		&item.LimitDown,
-		&item.Reference,
-		&updateData,
+		&item.Code, &item.Symbol, &item.Name, &item.Category, &item.DeliveryMonth,
+		&dDate, &item.UnderlyingKind, &item.Unit, &item.LimitUp, &item.LimitDown, &item.Reference, &updateData,
+		&item.ContractId, &item.Contract.Name, &item.Contract.PricePerTick,
+		&item.Contract.InitialMargin, &item.Contract.MaintenanceMargin, &item.Contract.Fee, &item.Contract.Tax,
+		&contractCreated, &contractUpdated,
 	); err != nil {
 		return nil, err
 	}
-	item.DeliveryDate = dDate.Format(entity.ShortSlashTimeLayout)
-	item.UpdateDate = updateData.Format(entity.ShortSlashTimeLayout)
+	item.DeliveryDate = dDate.Time.Format(entity.ShortSlashTimeLayout)
+	item.UpdateDate = updateData.Time.Format(entity.ShortSlashTimeLayout)
+	item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
+	item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
 	return &item, tx.Commit(ctx)
 }
 
 func (r *basic) SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error) {
 	builder := r.Builder().
 		Select(
-			"code", "symbol", "name", "category", "delivery_month", "delivery_date",
-			"underlying_kind", "unit", "limit_up", "limit_down", "reference", "update_date",
+			"basic_future.code", "basic_future.symbol", "basic_future.name", "basic_future.category",
+			"basic_future.delivery_month", "basic_future.delivery_date",
+			"basic_future.underlying_kind", "basic_future.unit", "basic_future.limit_up", "basic_future.limit_down",
+			"basic_future.reference", "basic_future.update_date",
+			"COALESCE(basic_future.contract_id,0)",
+			"COALESCE(basic_future_contract.name,'')", "COALESCE(basic_future_contract.price_per_tick,0)",
+			"COALESCE(basic_future_contract.initial_margin,0)", "COALESCE(basic_future_contract.maintenance_margin,0)",
+			"COALESCE(basic_future_contract.fee,0)", "COALESCE(basic_future_contract.tax,0)",
+			"basic_future_contract.created_at", "basic_future_contract.updated_at",
 		).
 		From(tableNameBasicFuture).
+		LeftJoin("basic_future_contract ON basic_future.contract_id = basic_future_contract.id").
 		OrderBy("code ASC")
 
 	sql, args, err := builder.ToSql()
@@ -342,29 +354,57 @@ func (r *basic) SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, 
 
 	var futures []*pb.FutureDetail
 	for rows.Next() {
-		var item pb.FutureDetail
-		var dDate, updateData time.Time
+		item := pb.FutureDetail{
+			Contract: &pb.FutureContract{},
+		}
+		var dDate, updateData pgtype.Timestamptz
+		var contractCreated, contractUpdated pgtype.Timestamptz
 		if err = rows.Scan(
-			&item.Code,
-			&item.Symbol,
-			&item.Name,
-			&item.Category,
-			&item.DeliveryMonth,
-			&dDate,
-			&item.UnderlyingKind,
-			&item.Unit,
-			&item.LimitUp,
-			&item.LimitDown,
-			&item.Reference,
-			&updateData,
+			&item.Code, &item.Symbol, &item.Name, &item.Category, &item.DeliveryMonth,
+			&dDate, &item.UnderlyingKind, &item.Unit, &item.LimitUp, &item.LimitDown, &item.Reference, &updateData,
+			&item.ContractId, &item.Contract.Name, &item.Contract.PricePerTick,
+			&item.Contract.InitialMargin, &item.Contract.MaintenanceMargin, &item.Contract.Fee, &item.Contract.Tax,
+			&contractCreated, &contractUpdated,
 		); err != nil {
 			return nil, err
 		}
-		item.DeliveryDate = dDate.Format(entity.ShortSlashTimeLayout)
-		item.UpdateDate = updateData.Format(entity.ShortSlashTimeLayout)
+		item.DeliveryDate = dDate.Time.Format(entity.ShortSlashTimeLayout)
+		item.UpdateDate = updateData.Time.Format(entity.ShortSlashTimeLayout)
+		item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
+		item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
 		futures = append(futures, &item)
 	}
 	return futures, tx.Commit(ctx)
+}
+
+func (r *basic) UpdateFutureDetailContract(ctx context.Context, req *pb.UpdateFutureDetailRequest) error {
+	var contractID *int64
+	if req.GetContractId() <= 0 {
+		contractID = nil
+	} else {
+		tmp := req.GetContractId()
+		contractID = &tmp
+	}
+	builder := r.Builder().
+		Update(tableNameBasicFuture).
+		Set("contract_id", contractID).
+		Where(squirrel.Eq{"code": req.GetCodes()})
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer r.Rollback(ctx, tx)
+
+	if _, err = tx.Exec(ctx, sql, args...); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }
 
 func (r *basic) SearchFutureDetail(ctx context.Context, code string) ([]*pb.FutureDetail, error) {
@@ -373,10 +413,18 @@ func (r *basic) SearchFutureDetail(ctx context.Context, code string) ([]*pb.Futu
 	}
 	builder := r.Builder().
 		Select(
-			"code", "symbol", "name", "category", "delivery_month", "delivery_date",
-			"underlying_kind", "unit", "limit_up", "limit_down", "reference", "update_date",
+			"basic_future.code", "basic_future.symbol", "basic_future.name", "basic_future.category",
+			"basic_future.delivery_month", "basic_future.delivery_date",
+			"basic_future.underlying_kind", "basic_future.unit", "basic_future.limit_up", "basic_future.limit_down",
+			"basic_future.reference", "basic_future.update_date",
+			"COALESCE(basic_future.contract_id,0)",
+			"COALESCE(basic_future_contract.name,'')", "COALESCE(basic_future_contract.price_per_tick,0)",
+			"COALESCE(basic_future_contract.initial_margin,0)", "COALESCE(basic_future_contract.maintenance_margin,0)",
+			"COALESCE(basic_future_contract.fee,0)", "COALESCE(basic_future_contract.tax,0)",
+			"basic_future_contract.created_at", "basic_future_contract.updated_at",
 		).
 		From(tableNameBasicFuture).
+		LeftJoin("basic_future_contract ON basic_future.contract_id = basic_future_contract.id").
 		Where(squirrel.Like{"code": fmt.Sprintf("%s%%", code)}).
 		Where(squirrel.NotEq{"code": fmt.Sprintf("%sR1", code)}).
 		Where(squirrel.NotEq{"code": fmt.Sprintf("%sR2", code)}).
@@ -401,26 +449,24 @@ func (r *basic) SearchFutureDetail(ctx context.Context, code string) ([]*pb.Futu
 
 	var futures []*pb.FutureDetail
 	for rows.Next() {
-		var item pb.FutureDetail
-		var dDate, updateData time.Time
+		item := pb.FutureDetail{
+			Contract: &pb.FutureContract{},
+		}
+		var dDate, updateData pgtype.Timestamptz
+		var contractCreated, contractUpdated pgtype.Timestamptz
 		if err = rows.Scan(
-			&item.Code,
-			&item.Symbol,
-			&item.Name,
-			&item.Category,
-			&item.DeliveryMonth,
-			&dDate,
-			&item.UnderlyingKind,
-			&item.Unit,
-			&item.LimitUp,
-			&item.LimitDown,
-			&item.Reference,
-			&updateData,
+			&item.Code, &item.Symbol, &item.Name, &item.Category, &item.DeliveryMonth,
+			&dDate, &item.UnderlyingKind, &item.Unit, &item.LimitUp, &item.LimitDown, &item.Reference, &updateData,
+			&item.ContractId, &item.Contract.Name, &item.Contract.PricePerTick,
+			&item.Contract.InitialMargin, &item.Contract.MaintenanceMargin, &item.Contract.Fee, &item.Contract.Tax,
+			&contractCreated, &contractUpdated,
 		); err != nil {
 			return nil, err
 		}
-		item.DeliveryDate = dDate.Format(entity.ShortSlashTimeLayout)
-		item.UpdateDate = updateData.Format(entity.ShortSlashTimeLayout)
+		item.DeliveryDate = dDate.Time.Format(entity.ShortSlashTimeLayout)
+		item.UpdateDate = updateData.Time.Format(entity.ShortSlashTimeLayout)
+		item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
+		item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
 		futures = append(futures, &item)
 	}
 	return futures, tx.Commit(ctx)
@@ -612,4 +658,206 @@ func (r *basic) SelectAllOptionDetail(ctx context.Context) ([]*pb.OptionDetail, 
 		options = append(options, &item)
 	}
 	return options, tx.Commit(ctx)
+}
+
+// CREATE TABLE basic_future_contract(
+//     "id" serial PRIMARY KEY,
+//     "name" varchar NOT NULL UNIQUE,
+//     "price_per_tick" DECIMAL NOT NULL,
+//     "initial_margin" int NOT NULL,
+//     "maintenance_margin" int NOT NULL,
+//     "fee" int NOT NULL,
+//     "tax" DECIMAL NOT NULL,
+//     "created_at" timestamptz NOT NULL,
+//     "updated_at" timestamptz NOT NULL
+// );
+
+func (r *basic) InsertFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	if t == nil {
+		return errors.New("future contract cannot be nil")
+	}
+
+	builder := r.Builder().
+		Insert(tableNameBasicFutureContract).
+		Columns(
+			"name", "price_per_tick", "initial_margin", "maintenance_margin", "fee", "tax",
+			"created_at", "updated_at",
+		).Values(
+		t.GetName(),
+		t.GetPricePerTick(),
+		t.GetInitialMargin(),
+		t.GetMaintenanceMargin(),
+		t.GetFee(),
+		t.GetTax(),
+		time.Now(),
+		time.Now(),
+	)
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer r.Rollback(ctx, tx)
+
+	if _, err = tx.Exec(ctx, sql, args...); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (r *basic) SelectAllFutureContract(ctx context.Context) ([]*pb.FutureContract, error) {
+	builder := r.Builder().
+		Select(
+			"id",
+			"name", "price_per_tick", "initial_margin", "maintenance_margin", "fee", "tax",
+			"created_at", "updated_at",
+		).
+		From(tableNameBasicFutureContract).
+		OrderBy("id ASC")
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Rollback(ctx, tx)
+
+	rows, err := tx.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var contracts []*pb.FutureContract
+	for rows.Next() {
+		var item pb.FutureContract
+		var createdAt, updatedAt pgtype.Timestamptz
+		if err = rows.Scan(
+			&item.Id,
+			&item.Name,
+			&item.PricePerTick,
+			&item.InitialMargin,
+			&item.MaintenanceMargin,
+			&item.Fee,
+			&item.Tax,
+			&createdAt,
+			&updatedAt,
+		); err != nil {
+			return nil, err
+		}
+		item.CreatedAt = timestamppb.New(createdAt.Time)
+		item.UpdatedAt = timestamppb.New(updatedAt.Time)
+		contracts = append(contracts, &item)
+	}
+	return contracts, tx.Commit(ctx)
+}
+
+func (r *basic) SelectFutureContractByID(ctx context.Context, id int64) (*pb.FutureContract, error) {
+	builder := r.Builder().
+		Select(
+			"id",
+			"name", "price_per_tick", "initial_margin", "maintenance_margin", "fee", "tax",
+			"created_at", "updated_at",
+		).
+		From(tableNameBasicFutureContract).
+		Where(squirrel.Eq{"id": id})
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Rollback(ctx, tx)
+
+	row := tx.QueryRow(ctx, sql, args...)
+	var item pb.FutureContract
+	var createdAt, updatedAt pgtype.Timestamptz
+	if err = row.Scan(
+		&item.Id,
+		&item.Name,
+		&item.PricePerTick,
+		&item.InitialMargin,
+		&item.MaintenanceMargin,
+		&item.Fee,
+		&item.Tax,
+		&createdAt,
+		&updatedAt,
+	); err != nil {
+		return nil, err
+	}
+	item.CreatedAt = timestamppb.New(createdAt.Time)
+	item.UpdatedAt = timestamppb.New(updatedAt.Time)
+	return &item, tx.Commit(ctx)
+}
+
+func (r *basic) UpdateFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	if t.GetId() == 0 {
+		return errors.New("future contract ID is required for update")
+	}
+
+	builder := r.Builder().
+		Update(tableNameBasicFutureContract).
+		Set("name", t.GetName()).
+		Set("price_per_tick", t.GetPricePerTick()).
+		Set("initial_margin", t.GetInitialMargin()).
+		Set("maintenance_margin", t.GetMaintenanceMargin()).
+		Set("fee", t.GetFee()).
+		Set("tax", t.GetTax()).
+		Set("updated_at", time.Now()).
+		Where(squirrel.Eq{"id": t.GetId()})
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer r.Rollback(ctx, tx)
+
+	if _, err = tx.Exec(ctx, sql, args...); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (r *basic) DeleteFutureContract(ctx context.Context, id []int64) error {
+	if len(id) == 0 {
+		return errors.New("no future contract IDs provided for deletion")
+	}
+
+	builder := r.Builder().
+		Delete(tableNameBasicFutureContract).
+		Where(squirrel.Eq{"id": id})
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	tx, err := r.Pool().Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer r.Rollback(ctx, tx)
+
+	if _, err = tx.Exec(ctx, sql, args...); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }

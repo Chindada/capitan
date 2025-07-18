@@ -41,6 +41,34 @@ func (m *MockBasicRepo) EXPECT() *MockBasicRepoMockRecorder {
 	return m.recorder
 }
 
+// DeleteFutureContract mocks base method.
+func (m *MockBasicRepo) DeleteFutureContract(ctx context.Context, id []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFutureContract", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFutureContract indicates an expected call of DeleteFutureContract.
+func (mr *MockBasicRepoMockRecorder) DeleteFutureContract(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFutureContract", reflect.TypeOf((*MockBasicRepo)(nil).DeleteFutureContract), ctx, id)
+}
+
+// InsertFutureContract mocks base method.
+func (m *MockBasicRepo) InsertFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertFutureContract", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertFutureContract indicates an expected call of InsertFutureContract.
+func (mr *MockBasicRepoMockRecorder) InsertFutureContract(ctx, t any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertFutureContract", reflect.TypeOf((*MockBasicRepo)(nil).InsertFutureContract), ctx, t)
+}
+
 // InsertFutureDetail mocks base method.
 func (m *MockBasicRepo) InsertFutureDetail(ctx context.Context, t []*pb.FutureDetail) error {
 	m.ctrl.T.Helper()
@@ -98,6 +126,21 @@ func (mr *MockBasicRepoMockRecorder) SearchFutureDetail(ctx, code any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchFutureDetail", reflect.TypeOf((*MockBasicRepo)(nil).SearchFutureDetail), ctx, code)
 }
 
+// SelectAllFutureContract mocks base method.
+func (m *MockBasicRepo) SelectAllFutureContract(ctx context.Context) ([]*pb.FutureContract, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectAllFutureContract", ctx)
+	ret0, _ := ret[0].([]*pb.FutureContract)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectAllFutureContract indicates an expected call of SelectAllFutureContract.
+func (mr *MockBasicRepoMockRecorder) SelectAllFutureContract(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllFutureContract", reflect.TypeOf((*MockBasicRepo)(nil).SelectAllFutureContract), ctx)
+}
+
 // SelectAllFutureDetail mocks base method.
 func (m *MockBasicRepo) SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, error) {
 	m.ctrl.T.Helper()
@@ -143,6 +186,21 @@ func (mr *MockBasicRepoMockRecorder) SelectAllStockDetail(ctx any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllStockDetail", reflect.TypeOf((*MockBasicRepo)(nil).SelectAllStockDetail), ctx)
 }
 
+// SelectFutureContractByID mocks base method.
+func (m *MockBasicRepo) SelectFutureContractByID(ctx context.Context, id int64) (*pb.FutureContract, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectFutureContractByID", ctx, id)
+	ret0, _ := ret[0].(*pb.FutureContract)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectFutureContractByID indicates an expected call of SelectFutureContractByID.
+func (mr *MockBasicRepoMockRecorder) SelectFutureContractByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectFutureContractByID", reflect.TypeOf((*MockBasicRepo)(nil).SelectFutureContractByID), ctx, id)
+}
+
 // SelectFutureDetailByCode mocks base method.
 func (m *MockBasicRepo) SelectFutureDetailByCode(ctx context.Context, code string) (*pb.FutureDetail, error) {
 	m.ctrl.T.Helper()
@@ -186,4 +244,32 @@ func (m *MockBasicRepo) SelectStockDetailByCode(ctx context.Context, code string
 func (mr *MockBasicRepoMockRecorder) SelectStockDetailByCode(ctx, code any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectStockDetailByCode", reflect.TypeOf((*MockBasicRepo)(nil).SelectStockDetailByCode), ctx, code)
+}
+
+// UpdateFutureContract mocks base method.
+func (m *MockBasicRepo) UpdateFutureContract(ctx context.Context, t *pb.FutureContract) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateFutureContract", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFutureContract indicates an expected call of UpdateFutureContract.
+func (mr *MockBasicRepoMockRecorder) UpdateFutureContract(ctx, t any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFutureContract", reflect.TypeOf((*MockBasicRepo)(nil).UpdateFutureContract), ctx, t)
+}
+
+// UpdateFutureDetailContract mocks base method.
+func (m *MockBasicRepo) UpdateFutureDetailContract(ctx context.Context, req *pb.UpdateFutureDetailRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateFutureDetailContract", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFutureDetailContract indicates an expected call of UpdateFutureDetailContract.
+func (mr *MockBasicRepoMockRecorder) UpdateFutureDetailContract(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFutureDetailContract", reflect.TypeOf((*MockBasicRepo)(nil).UpdateFutureDetailContract), ctx, req)
 }

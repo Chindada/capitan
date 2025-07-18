@@ -44,24 +44,70 @@ definitions:
       username:
         type: string
     type: object
+  pb.DayTrade:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    format: int32
+    type: integer
+    x-enum-varnames:
+    - DayTrade_DAY_TRADE_UNKNOWN
+    - DayTrade_DAY_TRADE_YES
+    - DayTrade_DAY_TRADE_ONLY_BUY
+    - DayTrade_DAY_TRADE_NO
   pb.FetchStatus:
     enum:
     - 0
     - 1
     - 2
     - 3
+    format: int32
     type: integer
     x-enum-varnames:
     - FetchStatus_FETCH_STATUS_UNKNOWN
     - FetchStatus_FETCH_STATUS_FETCHED
     - FetchStatus_FETCH_STATUS_FETCHING
     - FetchStatus_FETCH_STATUS_UNFETCH
+  pb.FutureContract:
+    properties:
+      created_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      fee:
+        type: integer
+      id:
+        type: integer
+      initial_margin:
+        type: integer
+      maintenance_margin:
+        type: integer
+      name:
+        type: string
+      price_per_tick:
+        type: number
+      tax:
+        type: number
+      updated_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+    type: object
+  pb.FutureContractList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/pb.FutureContract'
+        type: array
+    type: object
   pb.FutureDetail:
     properties:
       category:
         type: string
       code:
         type: string
+      contract:
+        $ref: '#/definitions/pb.FutureContract'
+      contract_id:
+        type: integer
       currency:
         type: string
       day_trade:
@@ -196,6 +242,7 @@ definitions:
     - 2
     - 3
     - 4
+    format: int32
     type: integer
     x-enum-varnames:
     - LoginRespCode_LOGIN_RESP_CODE_OK
@@ -328,6 +375,7 @@ definitions:
     - 0
     - 1
     - 2
+    format: int32
     type: integer
     x-enum-varnames:
     - OrderAction_ORDER_ACTION_UNKNOWN
@@ -337,12 +385,18 @@ definitions:
     properties:
       action:
         $ref: '#/definitions/pb.OrderAction'
+      auto_cancel:
+        type: boolean
+      auto_cancel_seconds:
+        type: integer
       code:
         type: string
       price:
         type: number
       quantity:
         type: integer
+      retry:
+        type: boolean
     type: object
   pb.OrderStatus:
     enum:
@@ -355,6 +409,7 @@ definitions:
     - 6
     - 7
     - 8
+    format: int32
     type: integer
     x-enum-varnames:
     - OrderStatus_ORDER_STATUS_UNKNOWN
@@ -373,6 +428,7 @@ definitions:
     - 2
     - 3
     - 4
+    format: int32
     type: integer
     x-enum-varnames:
     - OrderType_ORDER_TYPE_UNKNOWN
@@ -418,7 +474,7 @@ definitions:
       currency:
         type: string
       day_trade:
-        type: string
+        $ref: '#/definitions/pb.DayTrade'
       delivery_date:
         type: string
       delivery_month:
@@ -519,6 +575,15 @@ definitions:
           $ref: '#/definitions/pb.Trade'
         type: array
     type: object
+  pb.UpdateFutureDetailRequest:
+    properties:
+      codes:
+        items:
+          type: string
+        type: array
+      contract_id:
+        type: integer
+    type: object
   pb.User:
     properties:
       basic:
@@ -547,12 +612,27 @@ definitions:
     - 1
     - 2
     - 3
+    format: int32
     type: integer
     x-enum-varnames:
     - UserRole_USER_ROLE_UNKNOWN
     - UserRole_USER_ROLE_USER
     - UserRole_USER_ROLE_ADMIN
     - UserRole_USER_ROLE_ROOT
+  structpb.ListValue:
+    properties:
+      values:
+        description: Repeated field of dynamically typed values.
+        items:
+          $ref: '#/definitions/structpb.Value'
+        type: array
+    type: object
+  structpb.Value:
+    properties:
+      kind:
+        description: "The kind of value.\n\nTypes that are valid to be assigned to
+          Kind:\n\n\t*Value_NullValue\n\t*Value_NumberValue\n\t*Value_StringValue\n\t*Value_BoolValue\n\t*Value_StructValue\n\t*Value_ListValue"
+    type: object
   timestamppb.Timestamp:
     properties:
       nanos:
@@ -575,6 +655,116 @@ info:
   title: Capitan V1 OpenAPI
   version: v0.0
 paths:
+  /api/capitan/v1/basic/contract/future:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: id(int) of contract
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/structpb.ListValue'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Delete future contract
+      tags:
+      - Basic V1
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.FutureContractList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Get all future contracts
+      tags:
+      - Basic V1
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.FutureContract'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Create future contract
+      tags:
+      - Basic V1
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.FutureContract'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Update future contract
+      tags:
+      - Basic V1
   /api/capitan/v1/basic/future/kbar:
     post:
       consumes:
@@ -646,6 +836,36 @@ paths:
       security:
       - JWT: []
       summary: Get futures
+      tags:
+      - Basic V1
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/pb.UpdateFutureDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/emptypb.Empty'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pb.APIResponse'
+      security:
+      - JWT: []
+      summary: Update futures
       tags:
       - Basic V1
   /api/capitan/v1/basic/options:
