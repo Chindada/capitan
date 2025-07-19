@@ -313,8 +313,12 @@ func (r *basic) SelectFutureDetailByCode(ctx context.Context, code string) (*pb.
 	}
 	item.DeliveryDate = dDate.Time.Format(entity.ShortSlashTimeLayout)
 	item.UpdateDate = updateData.Time.Format(entity.ShortSlashTimeLayout)
-	item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
-	item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
+	if item.GetContractId() == 0 {
+		item.Contract = nil // No contract associated
+	} else {
+		item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
+		item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
+	}
 	return &item, tx.Commit(ctx)
 }
 
@@ -370,8 +374,12 @@ func (r *basic) SelectAllFutureDetail(ctx context.Context) ([]*pb.FutureDetail, 
 		}
 		item.DeliveryDate = dDate.Time.Format(entity.ShortSlashTimeLayout)
 		item.UpdateDate = updateData.Time.Format(entity.ShortSlashTimeLayout)
-		item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
-		item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
+		if item.GetContractId() == 0 {
+			item.Contract = nil // No contract associated
+		} else {
+			item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
+			item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
+		}
 		futures = append(futures, &item)
 	}
 	return futures, tx.Commit(ctx)
@@ -465,8 +473,12 @@ func (r *basic) SearchFutureDetail(ctx context.Context, code string) ([]*pb.Futu
 		}
 		item.DeliveryDate = dDate.Time.Format(entity.ShortSlashTimeLayout)
 		item.UpdateDate = updateData.Time.Format(entity.ShortSlashTimeLayout)
-		item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
-		item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
+		if item.GetContractId() == 0 {
+			item.Contract = nil // No contract associated
+		} else {
+			item.Contract.CreatedAt = timestamppb.New(contractCreated.Time)
+			item.Contract.UpdatedAt = timestamppb.New(contractUpdated.Time)
+		}
 		futures = append(futures, &item)
 	}
 	return futures, tx.Commit(ctx)
