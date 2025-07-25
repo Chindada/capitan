@@ -16,7 +16,12 @@ type userRoutes struct {
 	jwtHandler *jwt.GinJWTMiddleware
 }
 
-func NewUserRoutes(public *gin.RouterGroup, private *gin.RouterGroup, jwtHandler *jwt.GinJWTMiddleware, system usecases.System) {
+func NewUserRoutes(
+	public *gin.RouterGroup,
+	private *gin.RouterGroup,
+	jwtHandler *jwt.GinJWTMiddleware,
+	system usecases.System,
+) {
 	r := &userRoutes{
 		system:     system,
 		jwtHandler: jwtHandler,

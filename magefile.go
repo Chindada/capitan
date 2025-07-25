@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"sync"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
@@ -118,44 +119,38 @@ func (Dep) SetGoPrivate() error {
 	return sh.RunV("go", "env", "-w", "GOPRIVATE=github.com/chindada/*")
 }
 
-// Install go.uber.org/mock/mockgen@latest
-func (Dep) InstallMockgen() error {
-	err := sh.Run("which", "mockgen")
+func checkAndInstall(name, installCmd string, args ...string) error {
+	err := sh.Run("which", name)
 	if err != nil || freshInstall {
-		fmt.Println("Installing Mockgen...")
-		return sh.RunV("go", "install", "go.uber.org/mock/mockgen@latest")
+		fmt.Printf("Installing %s...\n", name)
+		return sh.RunV(installCmd, args...)
 	}
 	return nil
+}
+
+// Install go.uber.org/mock/mockgen@latest
+func (Dep) InstallMockgen() error {
+	return checkAndInstall("mockgen", "go", "install", "go.uber.org/mock/mockgen@latest")
 }
 
 // Install github.com/swaggo/swag/cmd/swag@latest
 func (Dep) InstallSwag() error {
-	err := sh.Run("which", "swag")
-	if err != nil || freshInstall {
-		fmt.Println("Installing Swag...")
-		return sh.RunV("go", "install", "github.com/swaggo/swag/cmd/swag@latest")
-	}
-	return nil
+	return checkAndInstall("swag", "go", "install", "github.com/swaggo/swag/cmd/swag@latest")
 }
 
-// Install go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+// Install go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 func (Dep) InstallGolangciLint() error {
-	err := sh.Run("which", "golangci-lint")
-	if err != nil || freshInstall {
-		fmt.Println("Installing Golangci-lint...")
-		return sh.RunV("go", "install", "github.com/golangci/golangci-lint/cmd/golangci-lint@latest")
-	}
-	return nil
+	return checkAndInstall(
+		"golangci-lint",
+		"go",
+		"install",
+		"github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest",
+	)
 }
 
 // Install @redocly/cli@latest
 func (Dep) InstallRedocly() error {
-	err := sh.Run("which", "redocly")
-	if err != nil || freshInstall {
-		fmt.Println("Installing Redocly...")
-		return sh.RunV("npm", "install", "-g", "@redocly/cli@latest")
-	}
-	return nil
+	return checkAndInstall("redocly", "npm", "install", "-g", "@redocly/cli@latest")
 }
 
 // Remove mocks
@@ -207,26 +202,30 @@ type Test mg.Namespace
 
 // Install gotestsum
 func (Test) InstallGotestsum() error {
-	err := sh.Run("which", "gotestsum")
-	if err != nil || freshInstall {
-		fmt.Println("Installing Gotestsum...")
-		return sh.RunV("go", "install", "gotest.tools/gotestsum@latest")
-	}
-	return nil
+	return checkAndInstall("gotestsum", "go", "install", "gotest.tools/gotestsum@latest")
 }
 
 // Test Run gotestsum --junitfile report.xml --format testname -- -coverprofile=coverage.txt ./...
 func (Test) Run() error {
 	mg.Deps(Test.InstallGotestsum)
 	fmt.Println("Running tests...")
-	return sh.RunV("gotestsum", "--junitfile", "report.xml", "--format", "testname", "--", "-coverprofile=coverage.txt", "./...")
+	return sh.RunV(
+		"gotestsum",
+		"--junitfile",
+		"report.xml",
+		"--format",
+		"testname",
+		"--",
+		"-coverprofile=coverage.txt",
+		"./...",
+	)
 }
 
 type Db mg.Namespace
 
 func (Db) CheckDbToolExist() error {
 	if _, err := os.Stat("./bin/dbtool"); os.IsNotExist(err) {
-		return err
+		return fmt.Errorf("dbtool not found in ./bin, please run 'mage build' first")
 	}
 	return nil
 }
@@ -271,53 +270,52 @@ func Build() error {
 	if err != nil {
 		return err
 	}
-	envVar := make(map[string]string)
-	envVar["CGO_ENABLED"] = cgoEnable
-	envVar["GOOS"] = platform
-	envVar["GOARCH"] = arch
-	envVar["GOARM"] = armVersion
-	fn := func(dir string) error {
-		ldflags := "-s -w"
-		input := fmt.Sprintf("./%s/%s", cmdDir, dir)
-		outputName := fmt.Sprintf("%s/%s%s", outDir, outPrefix, dir)
-		if platform == platformWindows {
-			outputName = fmt.Sprintf("%s.exe", outputName)
-		}
-		fmt.Printf("Building %s %s for %s %s\n", buildTag, input, platform, arch)
-		return sh.RunWithV(
-			envVar, "go", "build", fmt.Sprintf("-ldflags=%s", ldflags), "-tags", buildTag, "-o", outputName, input)
+	envVar := map[string]string{
+		"CGO_ENABLED": cgoEnable,
+		"GOOS":        platform,
+		"GOARCH":      arch,
+		"GOARM":       armVersion,
 	}
+
+	var wg sync.WaitGroup
+	// A channel to collect errors from goroutines.
 	errCh := make(chan error, len(paths))
-	total := len(paths)
-	go func() {
-		for total != 0 {
-			continue
-		}
-		close(errCh)
-	}()
+
 	for _, dir := range paths {
 		if !dir.IsDir() {
-			total--
 			continue
 		}
-		go func() {
-			if err := fn(dir.Name()); err != nil {
-				errCh <- err
-			} else {
-				errCh <- nil
+		wg.Add(1)
+		go func(dirName string) {
+			defer wg.Done()
+			ldflags := "-s -w"
+			input := fmt.Sprintf("./%s/%s", cmdDir, dirName)
+			outputName := fmt.Sprintf("%s/%s%s", outDir, outPrefix, dirName)
+			if platform == platformWindows {
+				outputName = fmt.Sprintf("%s.exe", outputName)
 			}
-			total--
-		}()
+			fmt.Printf("Building %s %s for %s %s\n", buildTag, input, platform, arch)
+			if err := sh.RunWithV(
+				envVar, "go", "build", fmt.Sprintf("-ldflags=%s", ldflags), "-tags", buildTag, "-o", outputName, input,
+			); err != nil {
+				errCh <- err
+			}
+		}(dir.Name())
 	}
-	for {
-		err, ok := <-errCh
-		if !ok {
-			break
-		}
+
+	// Wait for all builds to complete and close the error channel.
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	// Check for any errors that occurred during the build.
+	for err := range errCh {
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 

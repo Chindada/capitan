@@ -148,10 +148,7 @@ func (t *calendar) fillHoliday() {
 
 func (t *calendar) fillTradeDay() {
 	tm := time.Date(startTradeYear, 1, 1, 0, 0, 0, 0, time.Local)
-	for {
-		if tm.Year() > endTradeYear {
-			break
-		}
+	for tm.Year() <= endTradeYear {
 		if tm.Weekday() != time.Saturday && tm.Weekday() != time.Sunday && !t.isHoliday(tm) {
 			t.tradeDayMap[tm] = struct{}{}
 		}

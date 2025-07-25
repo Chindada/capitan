@@ -229,7 +229,11 @@ func (r *trade) SelectTradesByRequest(ctx context.Context, req *pb.QueryTradeReq
 		builder = builder.Where("trade_record.order_id = ?", req.GetOrderId())
 	}
 	if req.GetStartTime().IsValid() && req.GetEndTime().IsValid() {
-		builder = builder.Where("trade_record.order_time >= ? AND trade_record.order_time <= ?", req.GetStartTime().AsTime().Local(), req.GetEndTime().AsTime().Local())
+		builder = builder.Where(
+			"trade_record.order_time >= ? AND trade_record.order_time <= ?",
+			req.GetStartTime().AsTime().Local(),
+			req.GetEndTime().AsTime().Local(),
+		)
 	}
 	sql, args, err := builder.ToSql()
 	if err != nil {

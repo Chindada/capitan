@@ -234,7 +234,10 @@ func (uc *basicUseCase) GetFutureKbar(ctx context.Context, req *pb.HistoryKbarRe
 	return uc.basicClient.GetFutureHistoryKbar(ctx, req)
 }
 
-func (uc *basicUseCase) GetLastFutureKbar(ctx context.Context, req *pb.HistoryKbarRequest) (*pb.HistoryKbarList, error) {
+func (uc *basicUseCase) GetLastFutureKbar(
+	ctx context.Context,
+	req *pb.HistoryKbarRequest,
+) (*pb.HistoryKbarList, error) {
 	request := &pb.HistoryKbarRequest{Code: req.GetCode()}
 	tradeDay := uc.calendar.GetFutureTradeDay()
 	if time.Now().Before(tradeDay.EndTime) && time.Now().After(tradeDay.StartTime) {
